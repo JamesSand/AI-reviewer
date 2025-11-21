@@ -1,0 +1,27 @@
+Summary: This paper investigates the persistent empirical puzzle of why soft, penalty-based constraints in deep learning often outperform their mathematically exact, hard-projected counterparts. The authors identify the "momentum persistence effect" as the key mechanism responsible for this discrepancy. They argue that classical optimization theory implicitly assumes momentum resets after each projection, which is contradicted by standard optimizers like Adam and SGD. Through controlled experiments on a quadratic problem and large-scale Transformer models, they demonstrate that persistent momentum leads to compounding corruption that saturates at much higher levels than predicted by reset-based models. They propose a corrected theoretical model that accurately predicts these saturation behaviors and super-linear scaling laws. The paper also validates these principles in Transformer and CNN architectures, providing actionable design principles for practitioners.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+- **Novelty and Significance:** The paper identifies a fundamental mechanism (momentum persistence effect) that explains a long-standing puzzle in deep learning optimization, bridging a critical gap between theory and practice.
+- **Rigorous Theoretical Framework:** The authors develop a novel theoretical model that accounts for momentum persistence, providing accurate predictions for scaling laws and saturation behavior.
+- **Strong Empirical Validation:** The theoretical predictions are extensively validated through controlled experiments on a simplified quadratic problem and then demonstrated to hold in state-of-the-art neural network architectures (Transformers and CNNs).
+- **Clear Explanation of the Mechanism:** The paper clearly explains *why* momentum persistence leads to compounding corruption and saturation, offering a compelling physical intuition.
+- **Actionable Insights:** The paper provides concrete design principles for practitioners, offering valuable guidance on choosing between soft and hard constraints and designing optimizers.
+- **Excellent Presentation:** The paper is well-written, well-structured, and presents complex ideas in a clear and accessible manner. Figures and tables are used effectively to support the arguments.
+
+Weaknesses:
+- **Approximation in Theoretical Model:** While the theoretical model is highly effective, the authors acknowledge a heuristic approximation (Assumption 4) regarding decorrelation in high dimensions. While empirically validated, a more rigorous justification or alternative derivations could strengthen the theoretical foundation further.
+- **Scope of "Soft" Constraints:** The paper primarily contrasts hard projections with "soft regularization" (penalty terms). It would be beneficial to discuss other forms of soft constraints or continuous approximations in more detail, if applicable.
+
+Questions:
+- The authors mention that "soft constraints... preserve momentum dynamics by translating constraints into smooth penalty terms that respect the optimizer's stateful nature." Could they elaborate on the specific ways in which penalty terms interact with momentum compared to hard projections? Are there any scenarios where certain penalty functions might still lead to undesirable momentum dynamics?
+- The theoretical model relies on a heuristic approximation (Assumption 4). While the empirical results strongly support the model, are there any theoretical directions to explore a more rigorous derivation of the scaling laws and saturation behavior without this approximation? This could involve exploring advanced techniques for analyzing stochastic dynamics on manifolds.
+- The paper focuses on the negative impact of momentum persistence. Are there any scenarios where momentum persistence, when managed appropriately, could be beneficial in constrained optimization settings? For example, could it potentially accelerate convergence or improve generalization in certain specific constraint types?
+
+Flag For Ethics Review: No
+
+Rating: 10
+Confidence: 5

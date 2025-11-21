@@ -1,0 +1,31 @@
+Summary:
+This paper addresses a persistent empirical puzzle in deep learning: why soft, penalty-based constraints often outperform hard, projected counterparts, despite the latter offering mathematically exact constraint satisfaction. The authors identify and rigorously analyze a previously unaccounted-for mechanism: the "momentum persistence effect." They demonstrate that classical optimization theory implicitly assumes momentum resets after each projection, an assumption contradicted by standard implementations (e.g., Adam, SGD with momentum) which maintain momentum buffers across projection steps. Through controlled experiments on a tractable quadratic problem, they show that this inherited "stale" momentum compounds corruption, leading to magnitudes orders higher than predicted by classical models and exhibiting super-linear scaling laws with respect to learning rate and projection frequency. They develop a corrected theoretical model that accurately predicts this saturation behavior and scaling. Furthermore, they validate these principles in large-scale Transformer models (Orthogonal Subspace Projection Attention) and CNNs (Spectral Normalization), confirming that momentum persistence significantly impacts performance, especially in high-noise, low-data scenarios. The paper concludes by offering concrete design principles for practitioners and highlighting a critical blind spot in current constrained optimization theory.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+*   **Clear Problem Identification and Resolution:** The paper successfully identifies and rigorously explains a long-standing, empirically observed phenomenon (soft constraints outperforming hard projections) which lacked a compelling theoretical explanation.
+*   **Rigorous Methodology:** The research employs a multi-faceted approach, starting with a controlled quadratic optimization problem to isolate the effect, followed by theoretical modeling, and finally validating the findings on state-of-the-art neural network architectures (Transformers and CNNs).
+*   **Novel Theoretical Insight:** The discovery and formalization of the "momentum persistence effect" as the root cause of the theory-practice gap is a significant novel contribution. The corrected theoretical model accurately predicts complex scaling relationships and saturation behavior that classical models fail to capture.
+*   **Strong Empirical Evidence:** The controlled experiments provide definitive quantitative evidence, showing orders-of-magnitude discrepancies and qualitatively different scaling laws between the classical "momentum reset" model and practical "momentum persistence." The neural network case studies further confirm the generality and practical relevance of the findings.
+*   **Practical Implications:** The paper provides actionable design principles for practitioners, guiding decisions on constraint type, projection frequency, and learning rate, especially in challenging optimization regimes. It emphasizes the importance of co-designing constraints with optimizers.
+*   **Broader Impact on Theory:** The work highlights a fundamental blind spot in optimization theory, arguing for a shift towards developing rigorous theories that account for the pragmatic realities and implementation details of modern ML systems.
+
+Weaknesses:
+*   **Heuristic Approximation in Theory:** The paper acknowledges a "heuristic approximation" (Assumption 4, line 573-574) in its theoretical derivation for tractability, stating it captures scaling behavior but not necessarily rigorous magnitude predictions. While empirically validated as effective, a fully rigorous, non-heuristic derivation remains a major theoretical challenge and would strengthen the work further.
+*   **R² Value for Saturation Fit:** The R² value of 0.54 for fitting the theoretical saturation curve to experimental data (Figure 2b) is described as "reasonable agreement," but it suggests that while the overall trend is captured, there might be other minor factors or complexities not fully accounted for by the current model.
+
+Questions:
+1.  The paper mentions Assumption 4 (Projection Heuristic - Approximate Decorrelation) as a heuristic approximation for tractability. Can the authors expand on the specific challenges or ongoing research directions towards developing a fully rigorous, non-heuristic mathematical framework for predicting corruption magnitudes, perhaps involving tools from stochastic differential geometry?
+2.  The "momentum persistence effect" is demonstrated for SGD with momentum and Adam. To what extent do the principles generalize to other stateful optimizers (e.g., RMSprop, Adagrad, or other adaptive methods that maintain different forms of internal state)? Are there distinct persistence effects for other state variables (e.g., second-moment estimates)?
+3.  Beyond the suggested principles of preferring soft constraints, using infrequent projections, and moderate learning rates, are there specific algorithmic modifications to optimizers themselves that could explicitly mitigate the momentum corruption effects when hard projections are necessary? For example, could "constraint-aware" optimizers dynamically adjust momentum or learning rates based on proximity to the constraint manifold?
+
+Flag For Ethics Review: No
+
+Rating: 10
+
+Confidence: 5
+
+Code Of Conduct: Yes

@@ -1,0 +1,30 @@
+Summary: This paper investigates the persistent empirical puzzle in deep learning where soft, penalty-based constraints often outperform their mathematically exact, hard-projected counterparts. The authors identify a previously unaccounted-for mechanism, the "momentum persistence effect," as the cause for this discrepancy. They demonstrate that classical optimization theory implicitly assumes optimizer momentum resets after each projection, which contradicts standard implementations. Through controlled experiments on a quadratic problem and large-scale Transformer models, they show that their corrected model, which accounts for momentum persistence, accurately predicts observed phenomena like saturation and super-linear scaling, which the classical model fails to explain.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+- **Novelty and Significance:** The paper identifies and rigorously analyzes a fundamental mechanism ("momentum persistence effect") that explains a widely observed phenomenon in deep learning. This is a significant contribution to the understanding of optimization in deep learning.
+- **Theoretical Rigor:** The paper develops a corrected theoretical model that successfully predicts empirical observations, going beyond superficial explanations. The theoretical derivations are detailed and well-supported by mathematical analysis.
+- **Empirical Validation:** The theory is extensively validated through controlled experiments on a simplified quadratic problem and then demonstrated to hold in complex, state-of-the-art neural network architectures (Transformers and CNNs).
+- **Clear Explanation of the Gap:** The paper clearly articulates the disconnect between classical optimization theory and practical deep learning implementations, pinpointing the "momentum reset" assumption as the core issue.
+- **Actionable Insights:** The authors provide concrete design principles for practitioners, offering valuable guidance on choosing and implementing constraints with different optimizers.
+- **Comprehensive Analysis:** The paper systematically analyzes the impact of various hyperparameters (learning rate, projection frequency) and provides strong evidence for their claims.
+- **Well-Structured and Readable:** The paper is well-organized, with a clear flow from problem statement to theoretical development, experimental validation, and practical implications.
+
+Weaknesses:
+- **Heuristic Approximation:** The theoretical analysis relies on a heuristic approximation (Assumption 4) regarding the decorrelation of momentum vector and parameter position. While empirically validated, the authors acknowledge that a fully rigorous mathematical justification is an open challenge.
+- **Scope of Application:** While the paper validates its findings on Transformers and CNNs, further investigation into the universality of the momentum persistence effect across all types of neural network architectures and optimization algorithms might be beneficial.
+- **Practical Implementation Nuances:** While practical advice is given, the optimal strategies for "co-designing" constraints and optimizers in highly complex, real-world scenarios might require further exploration.
+
+Questions:
+1. The paper mentions that the "momentum persistence effect" could potentially be beneficial in some scenarios (implicitly by helping with acceleration if managed correctly). Are there any settings where "momentum persistence" is not detrimental, or even advantageous, when combined with soft constraints or certain optimization strategies?
+2. Could you elaborate further on the challenges and potential approaches for developing a fully rigorous mathematical justification for Assumption 4, bridging the gap between the heuristic approximation and a first-principles proof?
+3. The paper focuses on projection-based hard constraints and penalty-based soft constraints. Are there other forms of constraint enforcement (e.g., projection-free methods, Lagrangian multipliers) where the momentum persistence effect might manifest differently or be mitigated?
+4. While the paper demonstrates empirical validation on Transformers and CNNs, have the authors considered how the momentum persistence effect might manifest in other complex architectures, such as graph neural networks or recurrent neural networks with different recurrent mechanisms?
+
+Flag For Ethics Review: No
+
+Rating: 10
+Confidence: 5

@@ -1,0 +1,37 @@
+Summary: The paper investigates why soft, penalty-based constraints often outperform hard projections in deep learning. It identifies a previously overlooked mechanism—the momentum persistence effect—arguing that classical analyses implicitly assume momentum is reset after projections, whereas practical optimizers (SGD with momentum, Adam) persist optimizer state, causing “stale” momentum to accumulate and be repeatedly corrupted by projections. Using a controlled quadratic-on-sphere setting, the authors show qualitative and quantitative mismatches with classical predictions (super-linear scaling in learning rate and projection frequency; much larger steady-state corruption), derive a corrected model predicting saturation M∞ ∝ α^2 τ/(1−β^{2τ}), and validate saturation empirically. They then present case studies: orthogonality constraints in Transformers (OSPA) and spectral normalization in CNNs, reporting consistent advantages of soft constraints, especially in noisy/low-data regimes. The paper proposes practical design principles and highlights theory-practice gaps in constrained optimization with stateful optimizers.
+
+Soundness: 3
+Presentation: 4
+Contribution: 4
+
+Strengths: 
+- Clear identification of a plausible and important mechanism (momentum persistence) that bridges a long-standing gap between hard projections and observed practice.
+- Careful controlled experiments on a tractable quadratic problem that reveal strong, repeatable divergences from classical predictions and support the new scaling laws.
+- A simple corrected theoretical model that predicts saturation and explains super-linear dependencies; empirically supported across hyperparameters.
+- Cross-architecture validation (Transformers with orthogonality, CNNs with spectral normalization), with larger gaps in high-noise regimes, aligning with the theory’s predictions.
+- Actionable practitioner guidance (favor soft constraints; co-design projection frequency, learning rate, and momentum; consider resets) with high practical relevance.
+
+Weaknesses: 
+- The main theoretical result relies on a heuristic decorrelation assumption (Assumption 4). While reasonable and empirically motivated, it limits rigor; the fit to saturation (R² ≈ 0.54) is moderate and the constants are not tightly characterized.
+- Missing key baselines/remedies: (a) projecting the momentum/velocity onto the tangent space after parameter projection (a standard Riemannian-style vector-transport approximation); (b) explicit momentum reset vs. tangent projection vs. damped carryover; (c) Riemannian SGD/Adam baselines to establish how far the proposed explanation extends relative to geometry-aware methods.
+- Limited optimizer coverage: results emphasize SGD-momentum; Adam’s second-moment state and bias correction aren’t modeled or ablated. It is unclear whether the same scaling and saturation hold under various β1/β2 and with/without decoupled weight decay (AdamW).
+- Case studies, while suggestive, have small sample sizes (3–5 seeds) and modest margins in some settings; fairness of hyperparameter tuning across soft vs. hard variants (e.g., τ, α vs. λ) could be discussed more deeply. The low-data SST-2 subsampling is single split; robustness to multiple subsamples is not reported.
+- The “10,000×” magnitude claim depends on specific metric choices and constants from the model; stronger calibration/units and sensitivity analyses would help.
+- Overclaiming risk: the paper at times suggests it “resolves” the broader puzzle; the current theory is validated but not fully rigorous, and generality beyond the studied constraints/manifolds is not definitively established.
+
+Questions: 
+- How does projecting the momentum into the tangent space after each parameter projection compare to reset and to persistence? Please include ablations: reset, tangent projection, partial damping, and vector-transport approximations.
+- How do results change for Adam/AdamW with varying β1, β2, and decoupled weight decay? Does second-moment adaptation mitigate or exacerbate persistence-induced corruption?
+- Can you report results across multiple random low-data splits and additional NLP/CV tasks to establish robustness of the soft-vs-hard gap?
+- What is the scaling with dimensionality d and with different manifolds (e.g., Stiefel vs. sphere vs. simplex)? Can you quantify when Assumption 4 is most/least valid?
+- Can you provide stronger statistical analyses (CIs, hypothesis tests) and power analyses for the neural experiments, and release code to ensure reproducibility?
+- Is there an efficient “constraint-aware” momentum update that approximates vector transport without the full cost of Riemannian methods? Any preliminary results?
+- How sensitive is the effect to gradient clipping and noise scale? In near-deterministic regimes, does the advantage of soft constraints diminish as the theory suggests?
+
+Flag For Ethics Review: No. If yes, explain why.
+
+Rating: 6
+
+Confidence: 4
+
+Code Of Conduct: Yes

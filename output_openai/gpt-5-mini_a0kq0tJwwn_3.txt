@@ -1,0 +1,38 @@
+Summary: This paper studies why soft (penalty) constraints often outperform hard (projection) constraints in deep learning. The authors identify a mechanism they call the "momentum persistence effect": when using stateful optimizers (SGD with momentum, Adam) the optimizer momentum buffer is maintained across projection steps, which leads to compounding "stale" momentum that is discarded by projections and results in large, saturated corruption. They show that the classical theoretical analyses implicitly assume a momentum reset after every projection and therefore underpredict corruption and give incorrect scaling laws (w.r.t. learning rate α, projection frequency τ, and condition number κ). The paper develops a corrected, tractable model for a quadratic-on-sphere problem that incorporates momentum persistence, derives scaling and saturation predictions (M∞ ∝ α^2 τ/(1−β^{2τ})), and validates these predictions with controlled experiments on the quadratic problem and with neural-network case studies: (1) orthogonality constraints in Transformers (OSPA) and (2) spectral normalization in ResNet-18. Empirically soft constraints outperform hard ones, especially in high-noise / low-data regimes. The authors propose design guidelines (favor soft constraints; if you must project, co-design with optimizer, infrequent projections, reset momentum, etc.).
+
+Soundness: 3
+Presentation: 4
+Contribution: 4
+
+Strengths:
+- Important, practically-motivated question with wide relevance: the soft-vs-hard constraint puzzle is common across many architectures and techniques.
+- Clear identification of a plausible and previously under-emphasized mechanism (momentum persistence) that directly ties implementation details to systematic differences between theory and practice.
+- Solid empirical campaign on a controlled, analytically tractable quadratic-on-sphere problem; results show large discrepancies with classical predictions and support the corrected model.
+- Evidence of transfer to real networks (Transformers and ResNets) with realistic setups and measurable performance gaps that align qualitatively with the theory.
+- The paper yields concrete, actionable takeaways for practitioners (when to prefer soft constraints, when to reset momentum, projection frequency considerations).
+- Writing is clear, figures are informative, and the appendices contain derivations and experimental protocols.
+
+Weaknesses:
+- The corrected theoretical analysis relies on a key heuristic (Assumption 4: approximate decorrelation and E[(m^T w)^2] ≈ (1/d) E[||m||^2]) to obtain closed-form scaling and magnitudes. This limits the rigor of the theoretical claims and raises questions about how broadly the quantitative predictions generalize when decorrelation fails (e.g., structured tasks, small d, or strongly aligned momentum).
+- The main derivation and much of the intuition focus on classical momentum SGD; the connection to adaptive optimizers like Adam (which include elementwise scaling and second-moment buffers, bias-correction, and different update geometry) is asserted but not derived in detail. It is not fully clear whether the same closed-form amplification/saturation formulas hold, or how second-moment statistics change the effect.
+- The "reset" baseline used to emulate classical theory (explicit zeroing of momentum after projection) is a fairly extreme intervention — while it isolates the mechanism, it may not represent the full set of reasonable mitigation strategies (e.g., projecting the momentum into the tangent space, rescaling or reprojecting momentum, zeroing only certain moments). Ablations of alternative mitigations are limited.
+- Some experimental details are insufficiently explored: sensitivity to optimizer variants (Adam vs AdamW vs SGD with Nesterov), dependence on bias-correction terms, per-layer measurements (is corruption concentrated in certain layers?), and whether the measured momentum-corruption metric directly correlates with downstream generalization or only with optimization instability.
+- The R² reported for the theoretical fit (0.54) is modest; this is acknowledged but suggests the model captures qualitative scaling but not precise quantitative behavior in all regimes.
+- Limited discussion of potential confounders in the neural-net experiments (e.g., SVD implementation numerical issues, interaction of weight decay / normalization layers, different regularization strengths for soft variants that may also affect performance).
+
+Questions:
+1. Adam / adaptive optimizers: Can the authors provide a more explicit analysis (or targeted experiments) isolating how Adam’s elementwise variance estimates and bias correction affect the momentum persistence mechanism? Does incorporating second-moment buffers change the amplification factor or saturation behavior qualitatively?
+2. Alternative mitigations: Did you evaluate projecting the momentum vector into the tangent space at projection time (i.e., transform m ← m − (m^T w) w) as a middle ground between full reset and no-change? If so, how does its empirical performance and corruption magnitude compare?
+3. Per-layer / per-parameter structure: Is the accumulated corruption uniform across layers/parameters or concentrated in particular layers (e.g., large, early layers, attention Q/K/V heads)? Please provide per-layer measurements if available.
+4. Dependence on dimensionality and decorrelation: How do the scaling laws behave for small d or for settings where momentum and w are not approximately decorrelated? Can you provide experiments varying d and checking Assumption 4 empirically?
+5. Reproducibility: Will you release code and seeds for the quadratic experiments and the neural-network runs? Some hyperparameter search choices (e.g., how λ was tuned for OSPA-Soft) should be fully reproducible.
+6. Connection to Riemannian or projection-aware methods: How do lightweight alternatives (e.g., projecting both weights and momentum onto the tangent space, or using retraction-based updates) compare in practice in terms of performance and compute cost? A small comparison would strengthen the prescriptive claims.
+7. Statistical robustness: For the neural-network results (especially the OSPA low-data +6.1% gap), please report significance tests or clarify the number of seeds and variance (some of this is provided but more complete statistics would help).
+
+Flag For Ethics Review: No. The paper studies optimization dynamics and reports experiments on standard public datasets and model architectures; it does not involve human subjects, sensitive personal data, or misuse risks that would require an ethics review.
+
+Rating: 6
+
+Confidence: 4
+
+Code Of Conduct: Yes

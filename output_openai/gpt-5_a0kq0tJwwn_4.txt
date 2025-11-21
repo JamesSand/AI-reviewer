@@ -1,0 +1,40 @@
+Summary: The paper investigates why soft, penalty-based constraints often outperform hard projections in deep learning. It identifies a previously overlooked mechanism—the momentum persistence effect—arising because practical optimizers (SGD with momentum, Adam) preserve optimizer state across discrete projections. Using a controlled quadratic-on-sphere setup, the paper shows that classical analyses (which implicitly assume momentum reset at each projection) fail to predict observed magnitudes and scaling with learning rate and projection interval. The authors propose a corrected model that predicts α^2 dependence, amplification with more frequent projections, and saturation at a steady state. They validate core predictions in simplified settings and provide two neural case studies (Transformer OSPA and CNN spectral normalization) where soft constraints outperform hard projections, with stronger effects in noisy/low-data regimes. The paper also offers practical design recommendations.
+
+Soundness: 2
+Presentation: 3
+Contribution: 3
+
+Strengths: 
+- Clear identification of a real implementation detail (momentum buffers persist across projections) that invalidates a common simplifying assumption in classical analyses.
+- Compelling controlled experiments demonstrating stark gaps between the “momentum reset” model and practice, including large magnitude differences and different scaling laws.
+- A simple, tractable corrected model that captures key behaviors: α^2 scaling, frequency-dependent amplification, and steady-state saturation.
+- Cross-domain validation on Transformers (OSPA) and CNNs (spectral normalization), including direct measurement of accumulated “momentum corruption,” and stronger effects in high-noise/low-data conditions as predicted.
+- Actionable design recommendations (soft constraints preferred; co-design projection frequency, learning rate, and momentum; consider momentum resets when using hard projections).
+
+Weaknesses: 
+- Theoretical rigor is limited by a strong heuristic decorrelation assumption (Assumption 4), acknowledged by the authors; several steps provide inequalities or heuristic constants without tight characterization. This is acceptable for an empirical theory paper, but it weakens claims of a definitive theoretical account.
+- Apparent inconsistency around τ-scaling: the paper repeatedly claims super-linear growth with τ and shows f(τ) = τ/(1 − β^{2τ}). For β < 1, f(τ) is approximately linear or sub-linear in τ over practical ranges (e.g., β=0.9: f(20)/f(10) ≈ 1.78, not the 3.1 claimed). The text conflates “projection frequency” with the interval τ and uses them interchangeably, which likely causes sign/intuitive mismatches. This needs correction and a careful, unambiguous definition of “frequency” versus “interval.”
+- The corrected model currently does not derive explicit κ-dependence yet the experiments discuss κ trends. The theoretical section uses ∥A∥ but does not tie scaling cleanly to κ, leaving a gap between the theory and the κ-related empirical observations.
+- The empirical “momentum corruption” magnitude units are not clearly defined or normalized, making cross-setting comparisons hard to interpret. It would help to report metrics normalized by layer norms, learning rate, or variance to enable principled comparisons and ablations.
+- Missing critical ablation in real networks: momentum reset at projection time (and/or zeroing Adam’s first and second moments). This would be the most direct test of the proposed mechanism on realistic models and would likely strengthen the causal argument.
+- Adam’s second moment (and weight decay in AdamW) are not modeled in theory; the analysis is for first-moment momentum. While the phenomena likely transfer, the paper would benefit from a brief extension or empirical ablation showing the same effect with Adam/AdamW and examining the role of v_t buffers across projections.
+- R² ≈ 0.54 for the saturation fit is modest; while the qualitative match is persuasive, it suggests the model doesn’t fully capture the dynamics.
+- Hyperparameter tuning fairness: while the authors grid search both hard and soft variants, details about compute parity and regularization strength calibration are limited. Hard constraints can alter effective regularization and optimization landscapes; this should be controlled or discussed more thoroughly.
+- Related work on Riemannian momentum and constraint-aware updates is somewhat thin; additional citations and comparisons (e.g., resetting or projecting momentum onto the tangent space, Riemannian Adam variants) would contextualize novelty more precisely.
+
+Questions: 
+- Please clarify the τ versus “projection frequency” terminology and fix the scaling discussion. With β < 1, f(τ)=τ/(1−β^{2τ}) appears close to linear or slightly sub-linear in τ over typical ranges. Which scaling is actually measured when reporting exponents 1.5–2.0? Are those fits versus 1/τ (true frequency) or τ (interval)?
+- Can you provide ablations on real networks where the momentum buffers (and, for Adam, second moments) are reset or projected onto the tangent space at each projection? Does this close the gap between hard and soft variants?
+- Can you extend the theory to include explicit κ-dependence (beyond ∥A∥), or at least provide an empirical study that disentangles κ from noise and learning rate to support the positive κ correlation claim?
+- How are “momentum corruption” units defined across architectures and layers? Could you report normalized metrics (e.g., per-parameter or per-layer normalization, or normalized by gradient noise variance) to facilitate cross-setting interpretability?
+- For Adam/AdamW, do you observe similar amplification if only the first moment is persisted but the second moment is reset, and vice versa? Any insights on which component is causally dominant?
+- Have you compared against constraint-aware alternatives (e.g., Riemannian SGD/Adam, tangent-space momentum, proximal updates that modify the state) to test if such remedies mitigate the persistence effect without sacrificing performance?
+- Will you release code and exact configurations to ensure reproducibility?
+
+Flag For Ethics Review: No
+
+Rating: 6
+
+Confidence: 4
+
+Code Of Conduct: Yes

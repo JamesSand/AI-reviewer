@@ -1,0 +1,37 @@
+Summary: The paper investigates why soft, penalty-based constraints often outperform hard projections in deep learning. It identifies “momentum persistence” as the key mechanism: practical optimizers (SGD with momentum, Adam) preserve their state across projection steps, causing stale momentum to repeatedly inject radial components that projections then discard. On a controlled quadratic-on-sphere setup, the authors show strong empirical deviations from classical projected-gradient predictions that assume momentum reset: super-linear scaling in learning rate and projection frequency, higher steady-state corruption magnitudes, and saturation behavior. A corrected model yields a recurrence with steady-state corruption M∞ ∝ α^2 τ/(1−β^(2τ)), explaining the observed trends and plateaus. Two case studies (OSPA in Transformers and spectral constraints in CNNs) show soft penalties outperform hard projections, especially in high-noise/low-data regimes, consistent with the theory. The work proposes design guidelines for co-designing constraints and optimizers.
+
+Soundness: 3
+Presentation: 4
+Contribution: 3
+
+Strengths: 
+- Clear identification of a practically relevant and under-discussed implementation detail (momentum persistence across projections) with broad implications.
+- Thorough controlled experiments that systematically vary α, τ, κ and reveal consistent deviations from classical predictions; compelling saturation evidence.
+- Simple yet insightful corrected model with interpretable scaling (α^2 and τ/(1−β^(2τ))) that qualitatively matches experiments and explains plateaus.
+- Cross-domain validation on Transformers (OSPA) and CNNs (spectral constraints) showing consistent performance benefits of soft penalties, amplified in low-data/high-noise settings.
+- Actionable guidance for practitioners (favor soft penalties; if projecting, reduce frequency, learning rate, or reset momentum).
+
+Weaknesses: 
+- Theoretical rigor is limited; the key decorrelation assumption (Assumption 4) is heuristic, and several bounds use loose inequalities, making quantitative predictions approximate. There is no formal convergence analysis.
+- Novelty claim vis-à-vis prior constrained momentum methods and Riemannian/adaptive manifold optimization is not fully situated; related literature on projected heavy-ball/Nesterov, mirror-prox with momentum, and manifold-aware Adam variants could be discussed and contrasted more deeply.
+- Magnitude comparisons (e.g., “10,000×”) depend on an ad hoc corruption metric; a clearer link between the metric and optimization/generalization performance would strengthen the causal narrative.
+- Fairness of empirical comparisons: soft variants are tuned via λ; hard variants tune τ and α, but it’s unclear whether momentum reset or state-adaptive variants (e.g., zeroing first moment, damping, or Riemannian updates) were given equal tuning or whether constraint satisfaction vs accuracy trade-offs were matched.
+- Limited ablations: sensitivity to β, optimizer type (SGD vs Adam vs AdamW/Nesterov), gradient clipping, noise models, and projection types; whether resetting momentum after projection closes the performance gap in large models is not shown.
+- Constraint fidelity: the penalty approach may violate constraints more; missing quantitative measures of constraint violation and its impact on downstream metrics.
+
+Questions: 
+- Can you report results with explicit momentum resets after projections in the neural models (Transformers/CNNs)? Does it close most of the gap to soft penalties?
+- How sensitive are the empirical scaling laws and steady-state levels to β, Nesterov momentum, Adam/AdamW’s second-moment state, and decoupled weight decay?
+- Do you measure constraint violation magnitudes for the soft variants and relate them to performance? Are there tasks where exact satisfaction is required and soft methods fail?
+- How robust are the Transformer results across more datasets and sizes, and under equal wall-clock or compute budgets?
+- Can you compare against manifold-aware optimizers (e.g., Riemannian SGD/Adam, vector-transport momentum) and state-damped projection heuristics?
+- Theoretical: can Assumption 4 be justified or relaxed, or can you empirically test the degree of m–w decorrelation to calibrate constants in the model?
+- Does scheduling τ or β during training mitigate persistence effectively, and is there an optimal schedule predicted by your model?
+
+Flag For Ethics Review: No. If yes, explain why.
+
+Rating: 6
+
+Confidence: 4
+
+Code Of Conduct: Yes

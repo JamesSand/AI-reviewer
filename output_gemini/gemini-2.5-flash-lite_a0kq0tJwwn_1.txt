@@ -1,0 +1,27 @@
+Summary: This paper addresses a persistent empirical puzzle in deep learning: why soft, penalty-based constraints often outperform their mathematically exact, hard-projected counterparts. The authors identify a previously unaccounted-for mechanism, the "momentum persistence effect," as the culprit. They demonstrate that classical optimization theory implicitly assumes optimizer momentum resets after each projection, a false assumption that leads to catastrophic underestimation of corruption magnitudes and incorrect scaling laws. The authors propose a corrected theoretical model that accounts for momentum persistence, which accurately predicts saturation behavior and super-linear scaling laws. They validate their theory through controlled experiments on a quadratic problem and demonstrate its relevance in large-scale Transformer models (OSPA) and CNNs (spectral normalization). The paper offers practical design principles for practitioners and highlights a critical blind spot in constrained optimization theory.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+1. **Clear Problem Formulation:** The paper clearly articulates a long-standing empirical puzzle in deep learning optimization and its implications.
+2. **Novel Theoretical Insight:** The identification and formalization of the "momentum persistence effect" is a significant theoretical contribution, bridging a gap between theory and practice.
+3. **Rigorous Theoretical Development:** The authors develop a corrected theoretical model with clear mathematical derivations and predictions. The use of a simplified quadratic problem is effective for isolating the core mechanism.
+4. **Extensive Empirical Validation:** The theory is thoroughly validated through controlled experiments on a quadratic problem, and then further demonstrated in complex neural network architectures (Transformers and CNNs) across different tasks.
+5. **Actionable Practical Guidance:** The paper translates its theoretical findings into concrete design principles for practitioners, offering valuable insights for optimizing deep learning models.
+6. **Excellent Presentation:** The paper is well-written, logically structured, and easy to follow. Figures and tables are effectively used to illustrate key concepts and results.
+
+Weaknesses:
+1. **Approximation in Theoretical Model:** While the authors acknowledge the heuristic approximation (Assumption 4) in their theoretical model, a more rigorous justification or discussion of its limitations could strengthen the theoretical foundation. However, they do provide strong empirical validation for its effectiveness.
+2. **Limited Scope of Neural Network Experiments:** While the experiments on Transformers and CNNs are valuable, expanding to other architectures or task types could further solidify the generality of the findings. However, the two chosen case studies are representative and well-executed.
+
+Questions:
+1. The paper relies on a heuristic approximation (Assumption 4) for mathematical tractability. Could the authors elaborate on potential future research directions to rigorously derive the scaling laws without this approximation?
+2. While the paper demonstrates that soft constraints generally outperform hard constraints due to momentum persistence, are there specific scenarios or constraint types where hard projections might still be preferable or necessary, even with the associated performance degradation? If so, what criteria should guide such a decision?
+3. The paper focuses on SGD with momentum and Adam-like optimizers. Are there other classes of optimizers (e.g., second-order methods, adaptive methods without momentum) where the momentum persistence effect might manifest differently or be less critical?
+
+Flag For Ethics Review: No.
+
+Rating: 10
+Confidence: 5

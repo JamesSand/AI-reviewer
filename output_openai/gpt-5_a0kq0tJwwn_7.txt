@@ -1,0 +1,37 @@
+Summary: The paper argues that a pervasive gap between soft penalty-based constraints and hard projection methods in deep learning is driven by a previously under-modeled mechanism: the persistence of optimizer momentum across projection steps. It claims that “classical” analyses implicitly assume a momentum reset at projections, leading to qualitatively and quantitatively wrong predictions. The authors present a controlled quadratic-on-sphere study with momentum SGD, show large discrepancies with the reset-based predictions, and propose a persistence-aware model that yields α^2 dependence, amplified dependence on projection period, and saturation of corruption at steady state. They validate qualitatively similar effects in two neural settings: orthogonality constraints in Transformers (OSPA) and spectral constraints in ResNet-18, where soft penalties outperform periodic SVD projections, especially in low-data/high-noise regimes. The paper offers design guidance (prefer soft constraints; if hard projections are needed, co-design with optimizer/momentum handling) and an approximate theoretical analysis explaining saturation and scaling.
+
+Soundness: 3
+Presentation: 3
+Contribution: 3
+
+Strengths: 
+- Identifies a practical and under-discussed implementation detail (momentum persistence across projections) that plausibly explains why soft constraints often outperform hard projections in modern training loops.
+- Clear controlled experiments on a tractable toy problem that isolate the role of momentum state and demonstrate substantial qualitative and quantitative deviations from a reset-based model.
+- A persistence-aware analytical model that predicts α^2 scaling and steady-state saturation, aligning with several empirical trends and offering a useful mental model for practitioners.
+- Cross-domain evidence in Transformers and CNNs showing consistent advantages for soft penalties, with larger gaps under higher noise or more aggressive hyperparameters, matching the paper’s narrative.
+- Actionable guidance for practice (penalties by default; if projecting, reduce frequency, moderate LR, consider state management) is concrete and timely.
+
+Weaknesses: 
+- The “classical theory” premise seems somewhat strawman-like. Much of the constrained optimization and Riemannian literature does not assume momentum reset per se; instead, it treats tangent-space updates, momentum transport, or projection of state. The paper should situate its critique more precisely with citations to works that actually make the reset assumption, or contrast against alternatives like projecting momentum or Riemannian momentum baselines.
+- The theoretical development relies on strong heuristic assumptions (notably the decorrelation assumption and the “work-energy” argument tying α^2 to corruption). The fit to saturation dynamics is only moderate (R² ≈ 0.54), and several constants are loose. This limits rigor and makes magnitude predictions less persuasive.
+- Some scaling claims appear inconsistent or insufficiently justified. The derived form M∞ ∝ τ/(1 − β^{2τ}) does not obviously yield the claimed “super-linear amplification with projection frequency” over the τ range studied; a careful sensitivity analysis versus τ for typical β would clarify the regime where super-linearity holds. The paper also alternates between viewing τ as period vs frequency, which can confuse interpretation.
+- Missing key baselines: (a) projecting or resetting the momentum buffer at projection time; (b) projecting both parameter and momentum onto the tangent space; (c) Riemannian optimization or cheap approximations (e.g., momentum transport). These would critically test whether the hypothesized mechanism can be mitigated as predicted.
+- The neural results, while encouraging, could be confounded by differences in regularization effects and hyperparameter tuning latitude between penalty and projection variants. The paper claims grid searches, but more comprehensive ablations (e.g., matching compute; sensitivity to β; explicit τ and α sweeps reported in main text; Adam vs SGD) would strengthen causal attribution to momentum persistence.
+- Reproducibility details are incomplete; releasing code and full configs is important. OSPA usage is somewhat specialized, and broader tasks/datasets would increase external validity.
+
+Questions: 
+- Can you include baselines that reset or project the momentum buffer (and for Adam, both first and second moments) at projection steps? How do these compare to soft penalties and to the persistence variant?
+- How do results change if you project the momentum into the tangent space instead of zeroing it? This is closer to the geometry-aware alternative and may retain some useful memory without radial corruption.
+- Please clarify the τ dependence carefully. With M∞ ∝ τ/(1 − β^{2τ}), for β in [0.8, 0.99], over τ ∈ {5,10,15,20}, do you empirically see super-linear growth relative to τ, or near-linear/sub-linear? A plot of f(τ)/τ would help reconcile claims.
+- How sensitive are the toy and neural results to β? Your model predicts strong dependence via (1 − β^{2τ})^{-1}; can you show a β-sweep to confirm?
+- Can you compare to a light-weight Riemannian baseline (e.g., retraction on Stiefel with momentum transport) to quantify the overhead vs performance trade-off and further validate the mechanism?
+- For the neural benchmarks, can you add ablations where hard projections are made less frequent while soft penalties are tuned to match constraint satisfaction levels, to isolate the effect of momentum persistence vs degree of constraint enforcement?
+- Will you release code and scripts to reproduce all figures and tables?
+
+Flag For Ethics Review: No. If yes, explain why.
+
+Rating: 5
+
+Confidence: 4
+
+Code Of Conduct: Yes

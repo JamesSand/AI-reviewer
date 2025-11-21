@@ -1,0 +1,30 @@
+Summary: This paper addresses a long-standing, significant theory-practice gap in deep learning: why soft, penalty-based constraints often outperform their mathematically exact, hard-projected counterparts. The authors identify and rigorously analyze a novel mechanism called the "momentum persistence effect." They demonstrate that classical optimization theory implicitly assumes optimizer momentum resets after each projection, an assumption contradicted by standard implementations (e.g., Adam, SGD with momentum). Through controlled experiments on a tractable quadratic problem, they show that this momentum persistence leads to compounding corruption, saturating at levels orders of magnitude higher than predicted by classical models, and exhibiting qualitatively different scaling laws with respect to hyperparameters (learning rate, projection frequency). A corrected theoretical model accounting for this persistence is developed and validated, accurately predicting the observed saturation behavior and super-linear scaling. The findings are further confirmed in state-of-the-art neural networks, specifically Orthogonal Subspace Projection Attention in Transformers and Spectral Normalization in CNNs, where soft constraints consistently outperform hard projections, especially in high-noise/low-data regimes. The paper concludes with actionable design principles for practitioners and outlines broader implications for optimization theory.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+*   **Clear Problem Identification**: The paper effectively highlights a well-known, yet unexplained, discrepancy between constrained optimization theory and deep learning practice.
+*   **Novel Mechanism Discovery**: The identification and characterization of the "momentum persistence effect" as the root cause is a significant and novel theoretical contribution.
+*   **Rigorous Methodology**: The work combines theoretical derivation with systematic empirical investigation, starting from a simplified, tractable problem and then generalizing to complex, state-of-the-art neural network architectures. The comparison between "momentum reset" (classical) and "momentum persistent" (practical) variants is crucial for isolating the effect.
+*   **Strong Empirical Evidence**: The controlled experiments clearly demonstrate the systematic failures of classical predictions by orders of magnitude and incorrect scaling laws. The corrected model's predictions (saturation, super-linear scaling) are thoroughly validated.
+*   **Real-world Validation**: The successful validation in Transformers (OSPA) and CNNs (Spectral Normalization) confirms the generality and practical relevance of the discovered principles. The observation that performance gaps amplify in low-data/high-noise regimes is particularly insightful.
+*   **Actionable Insights**: The paper provides concrete design principles for practitioners, guiding choices regarding soft vs. hard constraints, projection frequency, learning rates, and optimizer co-design.
+*   **Excellent Presentation**: The paper is exceptionally well-written, clearly structured, and easy to follow. Figures are informative and effectively convey complex results.
+
+Weaknesses:
+*   The theoretical derivation relies on Assumption 4 (Projection Heuristic - Approximate Decorrelation) for tractability, which is acknowledged as a heuristic approximation. While its empirical effectiveness is demonstrated, a full mathematical justification remains an open challenge.
+
+Questions:
+*   Given the significant impact of the momentum persistence effect, especially when hard projections are unavoidable, are there specific modifications or new designs for optimizers that could explicitly manage or mitigate this stale momentum? For example, could a "partial momentum reset" or a re-weighting scheme be integrated into existing optimizers like Adam?
+*   The paper focuses on SGD with momentum and Adam. How might the momentum persistence effect manifest in other stateful optimizers that don't explicitly use a momentum buffer but still accumulate internal state (e.g., RMSprop, Adagrad, or second-order methods)?
+*   Can the authors provide more detailed guidance or examples on how to "co-design hard projections with optimizer choice" beyond general advice like infrequent projections and moderate learning rates, especially for scenarios where these general guidelines might be suboptimal for other reasons?
+
+Flag For Ethics Review: No
+
+Rating: 8
+
+Confidence: 5
+
+Code Of Conduct: Yes

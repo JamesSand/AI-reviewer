@@ -1,0 +1,34 @@
+Summary: This paper investigates a long-standing empirical puzzle in deep learning: why soft, penalty-based constraints often outperform mathematically exact, hard-projected counterparts. The authors identify a novel mechanism, the "momentum persistence effect," as the root cause. They demonstrate that classical optimization theory implicitly assumes momentum resets after each projection, an assumption contradicted by standard optimizers like Adam and SGD. Through controlled experiments on a tractable quadratic problem, the paper shows that this "momentum reset" assumption leads to catastrophic mispredictions of corruption magnitudes and scaling laws. They then propose a corrected theoretical model that accounts for momentum persistence, which accurately predicts observed super-linear scaling relationships and saturation behavior. The findings are further validated in large-scale Transformer models and CNNs with spectral normalization, confirming that momentum persistence significantly impacts performance, especially in high-noise, low-data scenarios. The paper concludes by offering concrete design principles for practitioners.
+
+Soundness: 3
+Presentation: 4
+Contribution: 4
+
+Strengths:
+*   **Addresses a Significant Practical Problem**: The paper tackles a well-known, persistent empirical puzzle in deep learning, explaining why soft constraints are often preferred over hard projections, which has lacked a compelling theoretical explanation.
+*   **Novel Mechanism Identified**: The "momentum persistence effect" is a novel and well-articulated explanation for the observed phenomena, filling a crucial blind spot in constrained optimization theory.
+*   **Strong Empirical Evidence**: The paper provides compelling empirical evidence across multiple settings:
+    *   **Controlled Quadratic Problem**: Rigorous experiments systematically falsify classical predictions regarding scaling laws (τ-scaling, α-dependence, κ-dependence) and absolute corruption magnitudes.
+    *   **Crucial Experiment Design**: The direct comparison between "momentum reset" and "momentum persistence" variants on the quadratic problem (Figure 1) is highly effective at isolating the core mechanism and demonstrating its impact.
+    *   **Neural Network Validation**: The findings are successfully generalized and validated in state-of-the-art Transformer models (orthogonal constraints) and CNNs (spectral normalization), enhancing the practical relevance. Direct measurement of momentum corruption in CNNs provides additional strong support.
+*   **Corrected Theoretical Model**: The proposed corrected model, while relying on a heuristic approximation for tractability, successfully predicts key empirical phenomena, including super-linear scaling, exponential amplification, and saturation behavior, which classical theory fails to capture.
+*   **Clear Design Principles**: The paper translates its theoretical insights into actionable design principles for practitioners, offering practical guidance for constrained neural network optimization.
+*   **Excellent Presentation**: The paper is exceptionally well-written, clear, and logically structured, making complex ideas accessible. Figures are informative and support the narrative effectively.
+
+Weaknesses:
+*   **Heuristic Approximation in Theory**: The theoretical model relies on a "heuristic approximation" (Assumption 4 in Appendix A) for analytical tractability, specifically for estimating the expected squared radial component of momentum. While the authors are transparent about this and provide strong empirical validation for the predicted scaling laws and saturation behavior, a fully rigorous first-principles proof without this heuristic remains a major open theoretical challenge. The discrepancy in *absolute* magnitude predictions (classical O(10^-3) vs empirical O(10^1-10^2) for initial corruption, though the corrected model predicts saturation better) highlights this approximation.
+*   **Limited Scope of Optimizer State**: While the paper focuses on momentum persistence, modern optimizers like Adam (used in the experiments) also maintain other state variables (e.g., second moment estimates). The analysis primarily focuses on momentum. The interplay with other stateful components could be a direction for future work.
+
+Questions:
+1.  Could the authors elaborate on potential approaches to achieve a fully rigorous mathematical justification for Assumption 4 ("Projection Heuristic - Approximate Decorrelation")? What specific tools from stochastic differential geometry or manifold analysis might be most promising, and what are the key challenges in applying them?
+2.  The paper focuses on SGD with momentum and briefly mentions Adam. Given that Adam maintains both first and second moment estimates, how might the persistence effect manifest differently or be influenced by the second moment buffer? Does the factor (1-β^(2τ))^(-1) still hold, or would a more complex factor appear?
+3.  The proposed design principles include "explicit momentum resets after projections when benefits of constraint satisfaction outweigh loss of acceleration." How would one quantitatively determine this trade-off in practice, and what would be the practical implications (e.g., how to reset only the "stale" part of momentum, or the whole buffer)?
+4.  The paper highlights that the performance gap widens in high-noise, low-data scenarios. Is there a more refined theoretical understanding or a specific parameter in the corrected model that explicitly captures this dependence on "noise" (beyond σ²)?
+
+Flag For Ethics Review: No
+
+Rating: 8
+
+Confidence: 5
+
+Code Of Conduct: Yes

@@ -1,0 +1,30 @@
+Summary: This paper addresses a long-standing empirical puzzle in deep learning: why soft, penalty-based constraints often outperform mathematically exact, hard-projected counterparts. The authors propose and rigorously demonstrate the "momentum persistence effect" as the root cause. They show that classical optimization theory implicitly assumes optimizer momentum resets after each projection, an assumption contradicted by standard optimizers like Adam and SGD. Through a series of meticulously designed controlled experiments on a tractable quadratic problem, they demonstrate that classical models fail catastrophically in predicting corruption magnitudes and scaling laws. They then develop a corrected theoretical model that accounts for momentum persistence, accurately predicting super-linear scaling and saturation behavior observed in practice. The findings are further validated in state-of-the-art Transformer models with orthogonal constraints and CNNs with spectral normalization. The paper concludes with actionable design principles for practitioners and outlines broader implications for optimization theory, arguing for a shift towards theories that align with pragmatic implementation realities.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+*   **Addresses a fundamental and pervasive puzzle:** The paper tackles a critical and widely observed phenomenon in deep learning that has lacked a compelling theoretical explanation.
+*   **Rigorous and systematic methodology:** The authors start with a simplified theoretical model, systematically identify its implicit faulty assumption (momentum reset), conduct controlled experiments to empirically falsify classical predictions, and then develop a corrected theoretical model. This rigorous approach builds a strong case.
+*   **Strong empirical evidence:** The controlled experiments demonstrate massive discrepancies between classical predictions and empirical observations (e.g., 10,000x underestimation of corruption magnitude, qualitative changes in scaling laws). Figure 1 and 2 are highly effective in illustrating these differences.
+*   **Comprehensive validation:** The findings are not only confirmed in a simplified setting but also successfully validated in complex, state-of-the-art neural networks (Transformers and CNNs), demonstrating the generality and practical relevance of the "momentum persistence effect."
+*   **Clear theoretical contribution:** The paper introduces a novel theoretical mechanism (momentum persistence) and provides a corrected model that accurately explains observed phenomena, thereby filling a significant gap in constrained optimization theory.
+*   **Actionable insights:** The paper translates its theoretical discoveries into concrete design principles for practitioners, offering practical guidance for implementing constrained neural networks effectively.
+*   **Broader implications:** The work opens up important new research directions, advocating for more pragmatic optimization theories that consider implementation details and stateful dynamics.
+
+Weaknesses:
+*   The theoretical analysis relies on a heuristic approximation (Assumption 4 in Appendix A.1) for tractability. While acknowledged as a limitation and empirically validated, a fully rigorous, first-principles proof without this approximation remains a significant future challenge. This doesn't detract from the current paper's strong contribution, but it is a theoretical completeness point.
+
+Questions:
+1.  The paper highlights that classical theory assumes momentum resets after projection, while standard implementations maintain momentum persistence. Are there any existing optimizers or theoretical frameworks that *do* explicitly handle momentum resets after projection, and if so, how do they perform relative to soft constraints or persistence-aware hard projections?
+2.  The "momentum persistence effect" is shown to be exacerbated in high-noise, low-data regimes. Could the authors elaborate on whether there are specific architectural choices or regularization techniques that might inherently mitigate or amplify this effect, beyond the general advice on learning rates and projection frequency?
+3.  The paper proposes designing "constraint-aware" optimizers. Could the authors provide more concrete initial ideas or directions for what such an optimizer might look like, perhaps drawing inspiration from Riemannian optimization or other adaptive methods?
+
+Flag For Ethics Review: No
+
+Rating: 10
+
+Confidence: 5
+
+Code Of Conduct: Yes

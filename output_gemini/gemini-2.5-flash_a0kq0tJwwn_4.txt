@@ -1,0 +1,30 @@
+Summary: This paper identifies and analyzes the "momentum persistence effect," a novel mechanism that resolves a long-standing puzzle in deep learning: why soft, penalty-based constraints often outperform hard-projected counterparts. The authors demonstrate that classical optimization theory implicitly assumes momentum resets after each projection, an assumption contradicted by standard optimizers like Adam and SGD. Through a rigorous methodology involving controlled experiments on a tractable quadratic problem, they show systematic failures of classical models and develop a corrected theoretical model that accurately predicts observed phenomena, including super-linear scaling with learning rate and projection frequency, and corruption saturation at magnitudes orders of magnitude higher than classical predictions. The findings are further validated on state-of-the-art Transformer and CNN architectures, providing actionable design principles for practitioners and highlighting a critical blind spot in constrained optimization theory.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+*   **Addresses a Core Theory-Practice Gap**: The paper tackles a fundamental and pervasive empirical puzzle in deep learning, explaining why soft constraints consistently outperform hard projections, which has lacked a compelling theoretical explanation.
+*   **Novel Mechanism Identification**: The identification of the "momentum persistence effect" is a significant discovery, revealing a previously unaccounted-for interaction between stateful optimizers and discrete constraint projections.
+*   **Rigorous and Multi-faceted Methodology**: The research proceeds from controlled experiments on a simplified quadratic problem to developing and validating a new theoretical model, and finally demonstrating the effect's generality and impact on state-of-the-art neural networks (Transformers with OSPA, CNNs with spectral normalization). This progressive validation builds very strong evidence.
+*   **Clear Empirical Evidence**: The controlled experiments provide definitive empirical evidence that systematically violates classical predictions by orders of magnitude (10,000x for corruption magnitude) and qualitatively (scaling laws). The "crucial experiment" isolating the momentum persistence effect (Figure 1) is particularly compelling.
+*   **Actionable Design Principles**: The paper translates its theoretical insights into concrete guidance for practitioners, such as preferring soft constraints, and for hard projections, suggesting infrequent projections and moderate learning rates.
+*   **High Quality Presentation**: The paper is exceptionally well-written, clearly organized, and presents complex ideas in an accessible manner. The figures (e.g., Figure 1 and 2) are highly effective in conveying the key results and insights.
+
+Weaknesses:
+*   **Heuristic Approximation in Theory**: The corrected theoretical model relies on an acknowledged "Projection Heuristic - Approximate Decorrelation" (Assumption 4). While empirically validated to capture dominant mechanisms, a fully rigorous first-principles derivation without this heuristic remains a future challenge, as the authors admit. This slightly limits the theoretical completeness, though not the empirical validity of the core findings.
+*   **Limited Detail on Implementation**: While the paper states that standard optimizers "maintain their state," a brief explicit illustration in the main text of *how* Adam or SGD with momentum handles projections (or specifically, does *not* reset momentum) alongside the projection step might further ground the core assumption for readers less familiar with optimizer internals.
+
+Questions:
+*   Can the authors discuss the practical challenges or computational overhead associated with implementing an "explicit momentum reset after projections" (as suggested in the design principles) for large-scale models and its trade-offs against performance gain from reduced corruption?
+*   Beyond the specific examples of orthogonality and spectral normalization, are there other common hard constraints in deep learning (e.g., sparsity, quantization constraints during training) where the momentum persistence effect is likely to play a significant, yet overlooked, role?
+*   The paper focuses on SGD with momentum and Adam. How might other optimizers, particularly those with more complex state (e.g., second-moment estimates in Adam), interact with hard projections differently, and are the observed scaling laws likely to generalize?
+
+Flag For Ethics Review: No
+
+Rating: 10
+
+Confidence: 5
+
+Code Of Conduct: Yes

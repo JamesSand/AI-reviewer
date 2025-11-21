@@ -1,0 +1,28 @@
+Summary: This paper identifies and resolves a long-standing empirical puzzle in deep learning: why soft, penalty-based constraints consistently outperform mathematically exact, hard-projected counterparts. The authors introduce the "momentum persistence effect," demonstrating that classical constrained optimization theory relies on an implicit and incorrect assumption that optimizer momentum resets after each projection. Through rigorous controlled experiments on a tractable quadratic problem, they show that persistent momentum (as in standard optimizers like Adam and SGD) leads to compounding corruption, magnitudes orders of magnitude higher than classical predictions, and super-linear scaling with learning rate and projection frequency. A new theoretical model is developed that accurately predicts these observed behaviors, including corruption saturation. The findings are further validated on large-scale Transformer and CNN models, confirming the practical relevance and providing actionable design principles for practitioners, such as preferring soft constraints or carefully co-designing hard projections with optimizer choice.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+*   **Novel and Impactful Discovery**: The paper uncovers a fundamental, previously unaccounted-for mechanism ("momentum persistence effect") that explains a pervasive and consequential empirical puzzle in deep learning, bridging a significant theory-practice gap.
+*   **Rigorous Empirical Validation**: The authors employ a robust experimental methodology, starting with well-controlled experiments on a tractable quadratic problem to isolate the effect, followed by validation on state-of-the-art neural architectures (Transformers and CNNs). The results consistently demonstrate the systematic failures of classical theory and validate the new model's predictions.
+*   **Corrected Theoretical Model**: The paper develops a new theoretical model that accurately predicts the observed super-linear scaling, learning rate dependence, and corruption saturation, which classical models fail to capture by orders of magnitude.
+*   **Actionable Design Principles**: The work provides clear, practical guidance for practitioners on how to design constrained optimization methods, emphasizing the importance of soft constraints and thoughtful co-design for hard projections.
+*   **Excellent Presentation**: The paper is exceptionally well-written, clear, and logically structured. The figures and tables are highly informative and effectively communicate complex results.
+
+Weaknesses:
+*   The theoretical derivation of the corrected model relies on a "heuristic approximation" (Assumption 4), which treats high-dimensional momentum and parameter position as approximately decorrelated for magnitude estimation. While empirically validated to capture scaling laws, a fully rigorous analytical treatment remains an open challenge, as acknowledged by the authors. This limits the theoretical completeness, though not the practical utility.
+*   While the paper identifies key design principles, it offers less specific guidance on *how* to implement "explicit momentum resets" (as suggested for hard projections) without potentially sacrificing the benefits of momentum-based optimizers, or proposing novel optimizer modifications that might mitigate persistence effects in hard-projection settings.
+
+Questions:
+1.  The paper suggests "explicit momentum resets after projections when the benefits of constraint satisfaction outweigh the loss of acceleration" (line 436) as a design principle. Can the authors provide more concrete examples or explore specific algorithmic strategies for implementing such resets in existing optimizers (e.g., Adam, SGD with momentum) while minimizing potential performance degradation from resetting accumulated gradients?
+2.  Regarding the heuristic approximation in Assumption 4 (lines 572-574), the authors mention that a "fully rigorous analysis without this assumption is a major theoretical challenge—requiring tools from stochastic differential geometry to handle complex, path-dependent correlations on manifolds." Could the authors elaborate on what specific aspects of these tools would be needed and why this problem is particularly suited for them?
+
+Flag For Ethics Review: No
+
+Rating: 8
+
+Confidence: 5
+
+Code Of Conduct: Yes

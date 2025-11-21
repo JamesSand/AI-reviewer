@@ -1,0 +1,31 @@
+Summary: This paper identifies and thoroughly investigates the "momentum persistence effect," a fundamental, previously unaccounted-for mechanism that explains why soft, penalty-based constraints consistently outperform hard, projected constraints in deep learning. The authors demonstrate that classical optimization theory implicitly assumes optimizer momentum resets after each projection, an assumption contradicted by standard implementations of optimizers like Adam and SGD. This inherited "stale" momentum compounds corruption across projection cycles, leading to systematically incorrect predictions by classical models, including catastrophic underestimation of corruption magnitudes (by orders of magnitude) and qualitatively wrong scaling laws.
+
+The paper first establishes the failures of classical theory through rigorous controlled experiments on a tractable quadratic problem. It then proposes a corrected theoretical model that explicitly accounts for momentum persistence, accurately predicting observed phenomena such as super-linear scaling with learning rate and projection frequency, and a saturation behavior for corruption. The key insight is further validated by a crucial experiment directly comparing "reset momentum" and "persistent momentum" variants. Finally, the principles are confirmed to generalize to state-of-the-art neural architectures (Transformers with orthogonal constraints and CNNs with spectral normalization), where soft constraints consistently outperform hard projections, especially in challenging low-data or high-noise regimes. The work concludes by offering actionable design principles for practitioners and advocating for a shift in optimization theory to account for implementation realities.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+1.  **Fundamental Discovery:** The paper identifies and rigorously characterizes the "momentum persistence effect," a novel and crucial mechanism that resolves a long-standing, widespread empirical puzzle in deep learning. This represents a significant blind spot in classical optimization theory.
+2.  **Rigorous Methodology:** The research combines a strong theoretical framework with a systematic and multi-faceted experimental validation. This includes controlled experiments on a simplified problem to isolate the effect, detailed comparison of classical vs. corrected models, long-term validation of saturation, and extensive validation on complex, state-of-the-art neural networks (Transformers, CNNs) across different constraint types (orthogonality, spectral normalization).
+3.  **Clear Exposition of Theory-Practice Gap:** The paper masterfully highlights how idealized theoretical assumptions diverge from practical implementations, leading to vastly incorrect predictions. The direct empirical falsification of classical scaling laws and corruption magnitudes is highly compelling.
+4.  **Actionable Insights:** Beyond theoretical understanding, the paper provides concrete, practical design principles for practitioners (e.g., prefer soft constraints, if using hard projections, use infrequent projections, moderate learning rates, and consider explicit momentum resets). These principles are directly derived from the findings and validated in realistic settings.
+5.  **High Impact:** The findings are significant for both advancing the theoretical understanding of optimization algorithms in deep learning and guiding practical system design, opening new avenues for research into more "implementation-aware" optimization theories.
+
+Weaknesses:
+1.  **Heuristic Approximation in Theory:** The theoretical model relies on Assumption 4 (approximate decorrelation), which is a heuristic to achieve analytical tractability. While the empirical validation is strong and the paper openly acknowledges this limitation, a fully rigorous, first-principles derivation without this assumption would further strengthen the theoretical foundation.
+2.  **Scope of Optimizer Analysis:** While SGD with momentum and Adam are widely used, the in-depth analysis primarily focuses on their stateful dynamics. A deeper discussion or preliminary exploration of how other adaptive optimizers (e.g., RMSprop, Adagrad) might interact with this effect could be interesting, although the general principle likely holds.
+
+Questions:
+1.  The paper suggests "explicit momentum resets after projections" as a potential strategy when hard projections are necessary, while noting a potential "loss of acceleration." Could the authors elaborate on the practical trade-offs involved in implementing such resets in a real deep learning context (e.g., impact on overall training time, final performance, or tuning complexity), and if possible, provide any empirical exploration of this in the neural network case studies?
+2.  Regarding Assumption 4, the "Projection Heuristic - Approximate Decorrelation," could the authors speculate on specific conditions or problem characteristics (e.g., very low-dimensional latent spaces, highly non-isotropic noise, or specific manifold geometries) where this heuristic might be less accurate, and how such scenarios might alter the observed momentum persistence effects?
+3.  For the neural network case studies (especially OSPA in Transformers), the paper mentions that performance degrades with higher learning rates and more frequent projections. Could the authors provide a more quantitative breakdown of these scaling relationships (e.g., fitted exponents for α and τ sensitivity) in the appendix for the neural network experiments, similar to Table 1 for the simplified quadratic problem, to more directly bridge the gap between the controlled setting and real-world architectures?
+
+Flag For Ethics Review: No
+
+Rating: 8
+
+Confidence: 5
+
+Code Of Conduct: Yes

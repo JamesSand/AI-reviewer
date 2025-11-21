@@ -1,0 +1,26 @@
+Summary: This paper investigates the persistent empirical puzzle in deep learning where soft, penalty-based constraints often outperform their mathematically exact, hard-projected counterparts. The authors identify a previously un-accounted-for mechanism, the "momentum persistence effect," which explains this phenomenon. They demonstrate that classical optimization theory, which implicitly assumes momentum resets after projections, is fundamentally flawed because modern optimizers (like Adam and SGD) persist momentum across projection steps. This persistence leads to compounding corruption that saturates at much higher levels than predicted by classical models. The paper provides a corrected theoretical model that accurately predicts observed scaling laws and saturation behavior, validated through experiments on a tractable quadratic problem and on large-scale Transformer models. The authors conclude by offering design principles for practitioners, recommending soft constraints when possible and careful co-design of hard constraints with optimizers when necessary.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+- **Novelty and Impact:** The paper identifies and rigorously explains a critical, yet overlooked, mechanism (momentum persistence) that bridges a significant gap between theory and practice in deep learning optimization. This has direct implications for the design of constrained optimization methods.
+- **Strong Theoretical Framework:** The development of a corrected theoretical model that accurately predicts empirical observations (scaling laws, saturation) is a major strength. The mathematical derivations and proofs in the appendices are thorough.
+- **Rigorous Empirical Validation:** The authors systematically validate their theory through controlled experiments on a simplified quadratic problem and then demonstrate its relevance in state-of-the-art neural network architectures (Transformers and CNNs). The case studies are well-designed to isolate the effect of momentum persistence.
+- **Clear Exposition:** The paper is well-written and logically structured. The introduction clearly articulates the problem, and the subsequent sections build a compelling case for the proposed solution. The distinction between the "classical model" and their "corrected model" is clearly drawn.
+- **Actionable Insights:** The paper provides concrete design principles for practitioners, which is highly valuable for the community.
+
+Weaknesses:
+- **Heuristic Approximation:** The theoretical model relies on a heuristic approximation (Assumption 4) regarding the decorrelation of momentum and parameter position. While the authors acknowledge this and demonstrate its empirical success, a more rigorous mathematical foundation without this assumption would further strengthen the work.
+- **Limited Scope of Quadratic Problem:** While the quadratic problem is chosen for tractability, the direct link between its dynamics and complex neural network landscapes, while supported by the empirical validation, could be further elaborated.
+
+Questions:
+1. The paper relies on an approximation (Assumption 4) for tractability. Could the authors elaborate on the potential impact of this approximation on the theoretical bounds or its limitations in scenarios beyond those tested? Are there any known theoretical results for decorrelation in high-dimensional spaces that could provide further justification or alternative approaches?
+2. The paper suggests that "momentum persistence helps versus hurts optimization." While the primary focus is on the negative impacts of momentum corruption, are there any scenarios or constraint types where momentum persistence might actually be beneficial for optimization performance, perhaps by aiding in escaping local minima or accelerating convergence?
+3. The authors propose co-designing constraints and optimizers. Could they provide more specific guidance on how to "co-design" beyond general principles? For instance, are there specific optimizer hyperparameters or constraint formulations that are known to interact particularly well or poorly with momentum persistence?
+
+Flag For Ethics Review: No
+
+Rating: 10
+Confidence: 5

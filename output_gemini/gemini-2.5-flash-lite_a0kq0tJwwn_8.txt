@@ -1,0 +1,28 @@
+Summary: This paper investigates a long-standing empirical puzzle in deep learning: why soft, penalty-based constraints often outperform mathematically exact, hard-projected counterparts. The authors identify the "momentum persistence effect" as the key mechanism, arguing that classical optimization theory implicitly assumes momentum resets after each projection, which contradicts standard practice. They develop a new theoretical model that accounts for persistent momentum, predicting and empirically validating super-linear scaling with learning rate and projection frequency, and saturation of corruption levels. They further demonstrate the relevance of these findings in large-scale Transformer models and CNNs, offering practical design principles for practitioners.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+1.  **Novelty and Significance:** The paper identifies a fundamental, previously unaccounted-for mechanism (momentum persistence) that explains a pervasive empirical phenomenon in deep learning. This is a significant theoretical contribution.
+2.  **Rigorous Theoretical Framework:** The authors develop a new theoretical model and provide a detailed mathematical derivation that accurately predicts observed scaling laws and saturation behavior, which classical theory fails to do.
+3.  **Comprehensive Empirical Validation:** The theory is validated through controlled experiments on a simplified quadratic problem and then demonstrated to hold in complex, state-of-the-art architectures (Transformers and CNNs).
+4.  **Clear Explanation of Theory-Practice Gap:** The paper clearly articulates the disconnect between classical optimization theory's assumptions and practical deep learning implementations, providing a compelling explanation for why soft constraints often perform better.
+5.  **Actionable Design Principles:** The work offers concrete, practical advice for practitioners, which is highly valuable.
+6.  **Excellent Presentation:** The paper is well-written, logically structured, and clearly explains complex concepts. The figures and tables effectively illustrate the findings.
+
+Weaknesses:
+1.  **Approximation in Theoretical Model:** The authors acknowledge a heuristic approximation (Assumption 4) in their theoretical model regarding the decorrelation of momentum and parameter position. While empirically validated, a fully rigorous derivation without this approximation remains an open challenge. This is a minor point given the strong empirical support.
+2.  **Scope of Applicability:** While the paper focuses on constraints related to orthogonalization and spectral normalization, the broader applicability to other types of constraints and optimizers could be explored further. However, the identified mechanism is likely general.
+
+Questions:
+1.  The paper highlights that the momentum persistence effect leads to significantly higher corruption compared to a "reset" model. While this explains the performance gap, could there be scenarios where this "compounding corruption" might be inadvertently beneficial (e.g., acting as a form of regularization or accelerating convergence in specific contexts)?
+2.  Given the significant amplification factor of momentum corruption (up to 7.2x in theory, 5.5x in experiments), how does this translate to actual convergence rates or generalization performance in practice, beyond the observed performance differences between hard and soft constraints? Are there specific ranges of hyperparameters where this corruption becomes detrimental to convergence speed or generalization?
+3.  The paper proposes co-design of constraints and optimizers. Could the authors elaborate on potential research directions for *designing* optimizers that are inherently aware of and can manage momentum persistence more effectively when hard constraints are necessary?
+4.  What is the theoretical bound on the "stale" momentum component, and how does it relate to the choice of optimizer (e.g., Adam vs. SGD with momentum) in terms of its impact on momentum persistence?
+
+Flag For Ethics Review: No
+
+Rating: 10
+Confidence: 5

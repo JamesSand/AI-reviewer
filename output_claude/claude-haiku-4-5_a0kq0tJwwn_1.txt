@@ -1,0 +1,117 @@
+Summary:
+
+This paper investigates the longstanding empirical puzzle of why soft, penalty-based constraints often outperform hard projections in deep learning optimization. The authors identify the "momentum persistence effect" as the underlying mechanism: classical constrained optimization theory implicitly assumes momentum resets after each projection, while practical optimizers (Adam, SGD) maintain momentum across projections. This mismatch creates compounding corruption that saturates at levels 5-7× higher than reset baselines. The paper provides: (1) systematic empirical violations of classical theory predictions on a quadratic sphere problem; (2) a corrected theoretical model predicting super-linear scaling and saturation; (3) validation in Transformers (OSPA) and CNNs (spectral normalization). The work provides concrete design principles for practitioners and reveals a critical blind spot in optimization theory.
+
+---
+
+Soundness: 3
+
+Presentation: 3
+
+Contribution: 3
+
+---
+
+Strengths:
+
+1. **Identifies a genuine theory-practice gap**: The paper clearly documents systematic failures of classical theory across all key predictions (τ-scaling, α-scaling, κ-scaling, magnitude). The controlled experiments are well-designed to isolate the momentum persistence assumption.
+
+2. **Clever experimental isolation**: Section 3.1's comparison between explicit momentum reset vs. persistence variants directly isolates the hidden assumption, providing compelling empirical evidence for the core claim.
+
+3. **Clear practical relevance**: The phenomenon is ubiquitous (spectral normalization, orthogonal constraints, weight normalization), making the findings broadly applicable to practitioners.
+
+4. **Comprehensive empirical validation**: Multiple experiments across scales (quadratic → Transformers → CNNs) with consistent findings strengthen the narrative.
+
+5. **Well-articulated presentation**: The paper is generally well-written with clear exposition of the problem and compelling figures (Figure 1 is particularly effective).
+
+---
+
+Weaknesses:
+
+1. **Theoretical model has significant limitations**:
+   - Relies on a heuristic approximation (Assumption 4) that treats high-dimensional momentum and position as "approximately decorrelated." The authors acknowledge this is not rigorous and remains "an open theoretical challenge."
+   - The model is derived for a highly simplified setting (quadratic on sphere) and uses several restrictive assumptions (small step size, independent noise, decorrelation).
+   - The derivation includes inequality bounds (≥ in equation 3) that don't establish tight results. The connection between the bound and actual dynamics is unclear.
+   - No formal convergence analysis; the saturation prediction is intuitive but lacks rigorous justification.
+   - The model predicts theoretical amplification factor of 7.2× but experiments show 5.5×, suggesting the theory captures only approximate behavior.
+
+2. **Limited scope of theoretical validation**:
+   - The theory only predicts *scaling laws* (α², super-linear τ), not absolute magnitudes with high accuracy (R² = 0.54 in Figure 2).
+   - The corrected model (Eq. 4) succeeds mainly because it's fitted to empirical observations; it's unclear how predictive it is for new settings.
+   - No theoretical analysis for the neural network case; the connection between sphere dynamics and Transformer/CNN behavior is assumed rather than justified.
+
+3. **Neural network experiments are limited in scope**:
+   - **OSPA results**: Performance gaps are modest (1.5-6.1%) and occur across only 4 tasks. No statistical significance testing is provided (error bars shown but no p-values).
+   - **CNN results**: The 0.8% gap on CIFAR-10 is small and within typical experimental noise. The direct measurement of corruption (~900 units) is interesting but doesn't directly prove it causes the small performance difference.
+   - Both case studies compare against only one soft constraint baseline. No comparison with other solutions (e.g., Riemannian optimization, momentum clipping, other reset strategies).
+   - Missing ablation studies: What happens with explicit momentum resets in practice? How does performance vary with reset frequency?
+
+4. **Incomplete experimental characterization**:
+   - The quadratic sphere experiments use small-scale settings (d=50). Scalability to higher dimensions is untested.
+   - No experiments with other momentum-based optimizers (RMSprop, AdaGrad variants) to test generality.
+   - For neural networks, hyperparameter tuning appears limited. The statement "best-performing configuration" suggests each variant received its own tuning, potentially biasing comparisons.
+   - Missing: How do results change with different projection methods beyond SVD?
+
+5. **Design principles lack rigor**:
+   - The four design principles (Section 5) are qualitative and follow naturally from the observations. They don't provide quantitative guidance (e.g., "what learning rate reduction would eliminate the problem?" is not answered).
+   - The claim that "soft constraints should be the default choice" is not universally true—sometimes hard constraints are necessary for safety/correctness. The paper doesn't provide principled trade-offs.
+
+6. **Related work and positioning**:
+   - The paper mentions SPAM (Luo et al., 2025) as addressing "momentum corruption from gradient spikes" but doesn't clearly differentiate the mechanisms.
+   - Limited discussion of Riemannian optimization methods and *why* practitioners avoid them beyond "computational overhead."
+   - Missing discussion of recent work on constraint qualification and modern proximal methods.
+
+7. **Presentation issues**:
+   - Section 2.2's "Theorem 1" is informal—it states scaling behaviors but doesn't prove them (proof deferred to Appendix A).
+   - The term "momentum corruption" is introduced (Definition 2) as the radial component discarded by projection, but this is a geometric object-specific definition. How does it generalize to other constraints?
+   - Notation could be clearer: The symbol Δm_t is overloaded (Definition 2 vs. equation 2).
+
+8. **Limited novelty in core insights**:
+   - The observation that "stateful optimizers + discrete projections = mismatch" is intuitive once stated.
+   - The proposed solution (use soft constraints) is already standard practice.
+   - The contribution is primarily empirical documentation of why this practice works, not a fundamentally new algorithmic or theoretical contribution.
+
+---
+
+Questions:
+
+1. **Theoretical rigor**: Can you provide a fully rigorous derivation without the decorrelation heuristic (Assumption 4)? If not, what makes you confident this approximation captures the dominant behavior across all settings?
+
+2. **Neural network validation**: For the CNN case, you measure momentum corruption ≈900 but achieve only 0.8% accuracy gain. Can you quantify the relationship between corruption magnitude and performance loss? Is there a threshold beyond which corruption no longer matters?
+
+3. **Generalization**: How does the momentum persistence effect manifest for constraints beyond spheres and spectral norms (e.g., positivity, cardinality constraints)? Is the mechanism fundamentally the same?
+
+4. **Hyperparameter optimization**: In the neural network experiments, were both OSPA-Soft and OSPA-Hard given equal computational budgets for hyperparameter search? How sensitive are the results to this choice?
+
+5. **Momentum reset as remedy**: You propose infrequent projections or momentum resets as mitigation strategies. Can you experimentally quantify the performance-constraint-satisfaction trade-off when explicitly resetting momentum at projections?
+
+6. **Scalability**: How does the theory scale with problem dimension d? Does the heuristic approximation degrade for very high-dimensional problems (d >> 10,000)?
+
+---
+
+Weaknesses Summary (More Concise):
+
+- The theoretical model relies on unproven heuristics and achieves only modest empirical fit (R²=0.54). It captures scaling laws qualitatively but not quantitatively.
+- Neural network validation is limited in scope (4 NLP tasks, 1 vision task) with small absolute improvements and no significance testing.
+- The core contribution—documenting why soft constraints work—is descriptive rather than providing actionable algorithmic innovations.
+- Missing ablations and comparisons (explicit resets, Riemannian methods, other optimizers).
+
+---
+
+Flag For Ethics Review: **No**. 
+
+The paper is a theoretical and empirical study of optimization algorithms with no direct ethical concerns. The work does not involve human subjects, sensitive data, or applications that could cause harm. The practical implications (preference for soft constraints) are straightforward engineering trade-offs with no ethical implications.
+
+---
+
+Rating: **5**
+
+**Justification**: This paper makes a solid empirical contribution by identifying and documenting the momentum persistence effect, a previously unrecognized mismatch between theory and practice. The controlled experiments are well-designed and the phenomenon is clearly demonstrated. However, the theoretical model has significant limitations (relies on unproven heuristics, limited rigor), the neural network experiments are modest in scale and magnitude, and the ultimate conclusion (use soft constraints) is already standard practice. The paper reads more as a post-hoc explanation for existing practices than as providing new algorithmic or theoretical insights.
+
+For a top-tier venue with 30% acceptance rate, the work falls marginally below the threshold. The empirical documentation is valuable but incremental. A stronger paper would either: (1) provide rigorous theory without heuristic approximations, (2) propose novel algorithmic solutions beyond "prefer soft constraints," or (3) demonstrate substantially larger empirical improvements in realistic settings.
+
+---
+
+Confidence: **4**
+
+The experimental work is solid and the main claims are well-supported by the controlled experiments. However, uncertainty about the theoretical model's generality and the modest neural network improvements reduce confidence in the broader impact.

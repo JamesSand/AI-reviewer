@@ -1,0 +1,173 @@
+Summary:
+
+This paper identifies the "momentum persistence effect"—a previously unaccounted-for mechanism explaining why soft, penalty-based constraints empirically outperform hard projections in deep learning. The authors demonstrate that classical constrained optimization theory implicitly assumes momentum resets after each projection, contradicting all standard implementations (Adam, SGD). Through controlled experiments on a quadratic sphere optimization problem, they show that momentum persistence causes corruption to saturate at levels 5-7× higher than the classical model predicts. They develop a corrected theoretical model accounting for this persistence and validate principles in Transformer models using Orthogonal Subspace Projection Attention (OSPA). The work bridges a significant theory-practice gap and provides design principles for constraint-optimizer co-design.
+
+---
+
+Soundness: 3
+
+**Strengths of soundness:**
+- The controlled experimental design is excellent, directly comparing reset vs. persistent momentum variants to isolate causality (Section 3.1, Figure 1)
+- Systematic testing across multiple parameter configurations (τ, α, κ) with proper statistical reporting (50 trials, reported exponents with p-values)
+- Long-term validation extending to 200 projection cycles (Figure 2) strengthens saturation claims
+- Direct measurement of momentum corruption in ResNet-18 (Figure 3, value of 951) provides compelling empirical evidence
+- Clear mathematical formulation of the corrected model (Theorem 2, Equation 24) with explicit solution
+
+**Significant weaknesses:**
+- **Critical theoretical limitation:** Assumption 4 (approximate decorrelation, Section A.1) is acknowledged as heuristic without rigorous justification. The authors admit "a complete mathematical justification remains an open theoretical challenge." This undermines the rigor claimed for the "corrected model."
+- **Theoretical-experimental mismatch on magnitude:** The theory predicts amplification factor (1-β^{2τ})^{-1} ≈ 7.2, but experiments show 5.5× (Section 2.5). The 30% discrepancy is non-trivial for a quantitative theory, though acknowledged.
+- **Limited scope of theoretical analysis:** Analysis restricted to quadratic objectives on unit sphere. Generalization to arbitrary losses and manifolds is assumed but not proven. The claim that these principles "generalize to complex, high-dimensional landscapes" (Section 4) lacks theoretical justification.
+- **Correlation vs. causation in neural networks:** While OSPA and spectral normalization experiments show soft > hard, the causal link to momentum persistence specifically (vs. other effects like smoother optimization) is inferred rather than directly demonstrated beyond the ResNet momentum measurement.
+- **Missing convergence analysis:** No formal convergence rates derived. The paper provides descriptive model but lacks velocity bounds, convergence guarantees, or characterization of steady-state optimality gap.
+
+---
+
+Presentation: 4
+
+**Exceptional presentation strengths:**
+- Clear problem motivation addressing a real empirical puzzle (soft > hard constraints)
+- Excellent figure quality and design, particularly Figures 1-2 showing direct comparison of reset vs. persistent momentum
+- Logical flow: classical model → its systematic failure → isolation of root cause → corrected model → neural network validation
+- Concise mathematical statements (Theorems 1-2) with clear physical intuition provided
+- Comprehensive appendices with detailed derivations and experimental protocols
+- Good use of explicit assumptions (Assumptions 1-4) making theoretical basis transparent
+- Design principles clearly articulated (Section 5)
+
+**Minor presentation issues:**
+- Some notation introduced informally (Definition 1 uses L(w) without immediately specifying context on manifold)
+- Assumption 4's heuristic nature could be emphasized more prominently in main text rather than relegated mostly to appendix
+- The term "momentum reset" assumption could benefit from more explicit algorithmic notation earlier
+- A few figures are dense (Figure 2 panels c-d could be expanded)
+
+---
+
+Contribution: 3
+
+**Significant contributions:**
+1. **Identification of previously unrecognized mechanism:** The momentum persistence effect is a genuine gap in classical theory that explains widespread practice (soft vs. hard constraints). This is valuable for the optimization community.
+2. **Systematic empirical invalidation of classical theory:** Table 1 provides quantitative evidence (10,000× magnitude error) that classical models predict the wrong algorithm. This is strong evidence of theoretical blind spot.
+3. **Corrected theoretical model:** Equation (24) captures key phenomena (super-linear scaling, saturation, amplification factors) and has been empirically validated. The recurrence relation approach is sound.
+4. **Cross-domain validation:** OSPA (Transformers/NLP) and spectral normalization (CNNs/vision) demonstrate generality across architectures and constraint types.
+5. **Practical design principles:** Section 5 provides actionable guidance (prefer soft constraints, co-design with optimizer, be cautious in low-data regimes).
+
+**Limitations of contribution:**
+- **Novelty scope somewhat narrow:** The core insight—that stateful optimizers with discrete projections create persistent momentum artifacts—is intuitive in hindsight. The specific quantification is valuable, but the conceptual novelty is moderate.
+- **Incremental on existing momentum analysis:** Recent work (SPAM optimizer, AdamW implicit bias analysis) has begun recognizing momentum corruption issues. This work extends but does not radically reframe understanding.
+- **Theory-practice gap remains partially open:** While the paper explains *why* soft constraints work better, it doesn't provide constructive solutions beyond "prefer soft" or "co-design." No novel algorithms or modification strategies are proposed (e.g., adaptive momentum reset, constraint-aware optimizers).
+- **Limited scope of corrected model:** The theoretical results apply specifically to the sphere constraint with quadratic objectives. Extensions to other manifolds/losses are discussed but not rigorously developed.
+- **Empirical improvements modest:** OSPA gains are 1.5-6.1%, spectral normalization gains are 0.8-0.9%. While consistent, the absolute improvements are moderate, suggesting the phenomenon may be manageable rather than catastrophic in practice.
+
+---
+
+Strengths:
+
+1. **Rigorous experimental isolation:** The controlled comparison of reset vs. persistent momentum (Figure 1, Section 3.1) is exemplary methodology, directly proving that the momentum reset assumption is the source of failure.
+
+2. **Quantitative failure of classical theory across all metrics:** Table 1 shows systematic errors in all predicted scaling laws (τ scaling, α dependence, κ dependence) and magnitude underestimation by 10,000×. This is compelling evidence of fundamental theory error.
+
+3. **Long-horizon validation:** Extended experiments to 200 cycles (Figure 2) with saturation prediction match (R²=0.54) provide strong evidence that the corrected model captures essential dynamics.
+
+4. **Direct measurement in realistic models:** Figure 3 showing momentum corruption of 951 in ResNet-18 provides direct empirical support beyond toy problems, validating that the effect is not an artifact of simplified settings.
+
+5. **Clear bridging of theory-practice gap:** The paper articulates exactly how classical theory models the wrong algorithm (momentum reset vs. persistence), making the gap concrete and fixable.
+
+6. **Multi-domain validation:** Demonstrating effect across Transformers and CNNs with different constraint types (orthogonality, spectral norm) suggests generality.
+
+7. **Actionable practitioner guidance:** Section 5 provides concrete design principles (prefer soft constraints, tune projection frequency, co-design optimizer/constraint).
+
+---
+
+Weaknesses:
+
+1. **Theoretical rigor compromised by Assumption 4:** The decorrelation assumption E[(m^T w)^2] ≈ (1/d)E[||m||^2] is heuristic and unrigorously justified. This is the foundation for deriving the α² scaling and magnitude predictions. The authors acknowledge it cannot be fully justified without "tools from stochastic differential geometry." This significantly weakens claims of a rigorous "corrected theory."
+
+2. **Theory-experiment quantitative mismatch:** Theoretical amplification factor 7.2× vs. experimental 5.5× (30% error) is not adequately explained. For a quantitative theory, this discrepancy deserves deeper analysis.
+
+3. **Limited theoretical scope:** Analysis restricted to quadratic objectives on unit sphere. Generalization to arbitrary losses (neural network objectives) and manifolds (Stiefel, other groups) is assumed but not proven. The leap from sphere to Transformers (Section 4) lacks theoretical justification.
+
+4. **Causality in neural networks not firmly established:** While OSPA-Soft outperforms OSPA-Hard, the causal link to momentum persistence specifically is inferred. Alternative explanations (e.g., soft constraints enable smoother loss landscapes, better gradient flow) are not ruled out beyond the ResNet measurement.
+
+5. **No convergence analysis or optimality characterization:** The paper provides no formal convergence rates, velocity bounds, or characterization of steady-state distance to optimality. The corrected model describes behavior but doesn't prove algorithm correctness.
+
+6. **Modest practical improvements:** OSPA gains range 1.5-6.1% (with 6.1% only in synthetic low-data regime), spectral norm gains 0.8-0.9%. These consistent but modest improvements suggest the phenomenon may be manageable in practice, somewhat undermining urgency.
+
+7. **No novel algorithmic contributions:** The paper diagnoses the problem but proposes no new methods (e.g., adaptive momentum resets, constraint-aware optimizers). Recommendations are reactive rather than constructive.
+
+8. **κ-dependence reversal unexplained:** Theory predicts inverse κ-dependence, experiments show positive κ^{0.3} dependence. While the momentum persistence model explains the reversal qualitatively, the paper lacks intuition for why ill-conditioned problems suffer worse momentum corruption.
+
+9. **Limited analysis of when momentum persistence helps:** The paper frames persistence uniformly as harmful, but momentum persistence can also stabilize optimization in some settings (e.g., noisy gradients). No discussion of tradeoffs.
+
+10. **Experimental variance in neural networks:** Some results reported with small sample sizes (3 seeds for CIFAR-10, Table 3). Standard deviations overlap in some cases (e.g., 94.3±0.8% vs. 93.5±1.1%), weakening statistical claims.
+
+---
+
+Questions:
+
+1. **Assumption 4 rigorous justification:** Have you considered a more formal framework (e.g., random matrix theory, concentration bounds) to rigorously derive the decorrelation approximation? What is the magnitude of error from this approximation in the sphere setting?
+
+2. **Theory-experiment discrepancy:** Can you provide more analysis of why the theoretical amplification factor (7.2×) exceeds the experimental (5.5×)? Is this a limitation of the heuristic or inherent to the model?
+
+3. **Arbitrary manifolds:** Can you sketch how the analysis would extend to other commonly used manifolds (Stiefel, orthogonal groups, positive-definite cones)? Do the scaling laws change qualitatively?
+
+4. **Convergence rate:** Is there a clean expression for the convergence rate to steady state in terms of hyperparameters? Does corruption saturation imply suboptimality growth?
+
+5. **OSPA causality:** Beyond the ResNet measurement, how would you isolate momentum persistence as the cause of OSPA-Hard underperformance vs. other effects (e.g., loss landscape smoothness)?
+
+6. **Negative cases:** Are there settings where momentum persistence actually helps? Any empirical evidence for or against adaptive momentum resets?
+
+7. **Generalization to non-quadratic:** Can you provide theoretical or empirical evidence that the corrected model (Equation 24) predicts corruption magnitude accurately on realistic neural network loss landscapes?
+
+8. **Sample size justification:** Why only 3 seeds for CNN experiments? How sensitive are CIFAR-10 results to this choice?
+
+---
+
+Flag For Ethics Review: No.
+
+The paper addresses theoretical gaps in optimization and provides practical design guidance. No ethical concerns identified. Experiments use standard benchmarks (GLUE, CIFAR-10, WikiText-103) with no sensitive data or demographic considerations. The work promotes best practices in constrained optimization without societal risks.
+
+---
+
+Rating: 6
+
+**Justification:**
+
+This paper is **marginally above the acceptance threshold** for a top-tier ML conference. It makes a solid empirical contribution by identifying and systematically studying a previously unrecognized phenomenon (momentum persistence in constrained optimization) that explains a widespread empirical pattern (soft > hard constraints). The experimental work is rigorous, the theory provides useful predictive insights, and the practical implications are clear.
+
+However, the paper has notable limitations that prevent it from being a strong accept:
+
+1. **Theoretical rigor:** The corrected model relies on a heuristic approximation (Assumption 4) that lacks rigorous justification. The authors acknowledge this is unresolved, which undermines claims of a "correct" theory.
+
+2. **Limited scope:** Theory is restricted to quadratic+sphere problems. Generalization to neural network settings is empirically validated but theoretically unjustified.
+
+3. **Novelty:** While the specific insight (momentum persistence effect) is novel, the broader themes (stateful optimizers + discrete constraints → artifacts) are somewhat intuitive, and related work has begun recognizing momentum issues.
+
+4. **Practical impact:** Improvements are consistent but modest (1-6% on realistic tasks). The effect is manageable through practitioner guidelines rather than requiring algorithmic innovation.
+
+5. **Completeness:** No formal convergence analysis, no novel algorithms, limited exploration of when momentum persistence might help.
+
+The paper makes a valuable contribution to understanding the theory-practice gap in constrained optimization and would benefit the community. However, it falls short of being a clear strong accept due to theoretical limitations and modest practical impact. It is a good paper that advances the field incrementally, suitable for acceptance but not for spotlight/highlight status.
+
+For improvement to strong accept level (rating 8), the paper would benefit from:
+- Rigorous treatment of Assumption 4 (or formal characterization of approximation error)
+- Formal convergence analysis
+- Novel algorithmic contributions (e.g., constraint-aware optimizers)
+- Larger performance improvements or clearer demonstration of practical importance
+
+---
+
+Confidence: 4
+
+Confidence is "high" (4 out of 5) because:
+- The core empirical findings are solid, systematic, and well-documented
+- The theory, while heuristic, is mathematically coherent and validated experimentally
+- The practical implications are clearly articulated
+- The writing is clear and easy to verify
+
+Confidence is not "very high" (5) because:
+- The theoretical rigor has acknowledged gaps that limit assessment of true novelty
+- Some design choices (sample sizes, parameter ranges) could be more conservative
+- The generalization from toy problems to realistic settings, while validated empirically, lacks theoretical grounding
+
+---
+
+Code Of Conduct: Yes

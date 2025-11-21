@@ -1,0 +1,36 @@
+Summary: The paper argues that a key reason soft constraints often outperform hard projections in deep learning is the “momentum persistence effect”: practical optimizers (SGD with momentum, Adam) do not reset their momentum after discrete projections. A classical model that implicitly assumes momentum resets predicts scaling laws and magnitudes that disagree with experiments. The authors isolate the effect via controlled quadratic-on-sphere experiments, show large empirical mismatches with the reset-based model, and propose a corrected persistence model that predicts saturation and super-linear dependencies on learning rate and projection frequency. They validate trends in Transformer OSPA and CNN spectral normalization settings, and distill design principles (favor soft constraints; if using hard projections, manage optimizer state and frequency).
+
+Soundness: 3
+Presentation: 4
+Contribution: 3
+
+Strengths: 
+- Clear identification and isolation of a concrete implementation-detail gap (momentum persistence) between classical projected optimization theory and common practice.
+- Careful controlled experiments that contrast “reset” vs “persistent” momentum and reveal qualitatively different scaling (super-linear in α and τ) and large magnitude gaps, along with saturation behavior.
+- A simple corrected model with an interpretable recurrence that captures key qualitative trends and steady-state saturation; predictions broadly match experiments.
+- Cross-domain validation in Transformers (OSPA) and CNN spectral normalization showing soft constraints outperform hard projections, especially in higher-noise regimes, aligning with the theory.
+- Practical guidance for practitioners on constraint-optimizer co-design, with actionable takeaways.
+
+Weaknesses: 
+- Theoretical analysis relies on strong heuristic assumptions (notably the approximate decorrelation A.1/A.4 and the “work-energy” argument), and offers limited rigor on magnitudes; R² ≈ 0.54 suggests only moderate quantitative fit.
+- Core derivations and experiments focus on SGD with momentum; claims extend to Adam/AdamW but are not theoretically derived for adaptive methods with state (second moments, bias corrections) and only partially validated empirically.
+- Neural network validations are promising but modest in scope: few tasks/seeds, limited hyperparameter sweeps; fairness concerns remain (e.g., compute and tuning parity between soft penalties and hard SVD projections; projection frequency choices and wall-clock budgets).
+- Lack of comparisons to strong baselines designed precisely to mitigate the identified issue, such as: (i) explicit momentum reset after projection, (ii) projecting momentum into the tangent space, or (iii) Riemannian/transport-aware optimizers. Showing that “hard + momentum management” closes the gap would sharpen the causal claim and practical relevance.
+- The “corruption magnitude” units and the reported 10,000× discrepancy versus classical theory are hard to interpret without normalization; more ablations over β, dimensionality d, manifold type (sphere vs Stiefel), and noise models would strengthen generality claims.
+- OSPA and spectral normalization are each just one instantiation; broader architectural diversity and tasks (e.g., vision transformers, larger-scale language models) would boost external validity.
+
+Questions: 
+- Can you provide results for hard projections with (a) explicit momentum reset, (b) momentum projection onto the tangent space, and (c) momentum damping near projection steps? Do these mitigate the performance gap to soft constraints?
+- How does the effect change with Adam/AdamW when modeling and ablating second-moment states and bias corrections? Any theory or controlled experiments analogous to the SGD analysis?
+- Are compute budgets matched between soft and hard variants (projection cost, τ scheduling, training steps vs wall-clock)? Please report equal-time comparisons and sensitivity to τ under a fixed compute budget.
+- How sensitive are the results to β, dimensionality d, and manifold type (e.g., Stiefel/Grassmann)? Can you extend the analysis or provide experiments beyond the sphere?
+- In OSPA, does “hard + momentum reset/projection” recover most of the lost performance? If not, what residual gap remains?
+- Can you release code and logs for reproducibility, including seeds, hyperparameter sweeps, and instrumentation for corruption metrics?
+
+Flag For Ethics Review: No
+
+Rating: 6
+
+Confidence: 4
+
+Code Of Conduct: Yes

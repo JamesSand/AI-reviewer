@@ -1,0 +1,37 @@
+Summary: The paper studies why soft (penalty-based) constraints often outperform hard (projection-based) constraints in deep learning. The authors identify a previously under-appreciated mechanism — the "momentum persistence effect" — arising because practical optimizers (SGD with momentum, Adam) retain optimizer state across discrete projection operations, whereas classical theory implicitly assumes the momentum buffer is reset at projection boundaries. They develop a corrected analytic model for a quadratic-on-sphere benchmark that accounts for momentum persistence, derive scaling laws predicting super-linear dependence on learning rate and projection frequency and saturation of corruption, and validate these predictions in controlled synthetic experiments. They then demonstrate the phenomenon in neural networks (OSPA orthogonality in Transformers, spectral normalization in ResNet) showing consistent performance advantages for soft constraints and direct measurements of accumulated "momentum corruption." They conclude with actionable design principles (prefer soft constraints with momentum-based optimizers, co-design projections with optimizer choice, or reset/handle momentum) and point to future theoretical and algorithmic directions.
+
+Soundness: 3
+Presentation: 3
+Contribution: 4
+
+Strengths: 
+- Identifies a concrete, implementation-level mechanism (momentum persistence) explaining a widespread empirical puzzle; the idea is clear, plausible, and practically relevant.
+- Uses a clean controlled synthetic setup (quadratic on sphere) to isolate the mechanism, and provides analytic derivations that qualitatively match observed scaling laws (α^2, super-linear τ dependence, saturation).
+- Validates the mechanism across settings: controlled experiments, long-run saturation tests, and two practical neural-network case studies (Transformer orthogonality, ResNet spectral norm) with measured performance gaps and direct corruption measurements.
+- Produces actionable guidance for practitioners and highlights an important blind spot in classical projected-gradient analyses.
+- The paper is generally well-written and the experimental protocols are reasonably well documented (appendices).
+
+Weaknesses:
+- The theoretical analysis relies on heuristic approximations (in particular Assumption 4: approximate decorrelation and treating E[(m^T w)^2] ≈ (1/d)E[||m||^2]). The authors acknowledge this, but a lack of tighter justification limits quantitative claims and theoretical rigor (R^2=0.54 for the fit indicates moderate, not tight, agreement).
+- Treatment of adaptive optimizers is somewhat superficial. While Adam is mentioned, the model focuses on a single momentum buffer; Adam has both first (m) and second (v) moments and elementwise adaptive scaling that can qualitatively change dynamics. The paper does not comprehensively analyze how adaptive scaling or bias-correction terms alter the persistence effect.
+- Limited optimizer and projection variants. The experiments mainly contrast "reset" vs "persist" and soft vs hard (SVD) projections. There is little evaluation of alternative hard-projection designs (e.g., projecting momentum buffers as well, orthonormalization via different algorithms, or re-scaling moment vectors), nor thorough comparison to constraint-aware or Riemannian optimizers.
+- Statistical robustness in some experiments is limited (e.g., CIFAR/ResNet runs use 3 seeds). Some reported fits/exponents and amplification factors would benefit from more extensive sweeps and confidence estimates.
+- Some strong language/claims (e.g., "classical theory is catastrophically wrong by orders of magnitude") is justified qualitatively but might be softened: the observed discrepancies depend on parameter regimes (β, τ, α, noise) and on the heuristic approximations used in the theory.
+- The mechanism's relation to soft penalties needs slightly deeper discussion: penalties still produce radial gradient components — why do they not induce comparable accumulated corruption, and under what penalty strengths might they begin to suffer? Additional ablations on penalty strength and momentum dynamics would strengthen the argument.
+
+Questions:
+1. Adam-specific dynamics: Did you run experiments isolating the role of Adam's second-moment buffer (v) and adaptive scaling on the persistence effect? Would elementwise/adaptive step sizes amplify or suppress the corruption predicted by your model?
+2. Momentum handling alternatives: Have you tried projecting or otherwise adjusting the momentum buffers at projection time (e.g., removing radial components, rescaling m, or resetting only parts)? If so, how effective are these mitigations in practice (accuracy vs. destabilization trade-offs)?
+3. Sensitivity to β and dimensionality: How sensitive are the amplification and saturation effects to the momentum coefficient β and to parameter dimensionality d? Some regimes (small β, large d) might substantially reduce persistence — can you quantify the boundary where classical theory becomes a reasonable approximation?
+4. Corruption → performance link: You show performance gaps between soft and hard constraints and measure corruption magnitudes. Can you provide tighter causal evidence that the measured corruption (∆m magnitude) directly explains the downstream performance loss (e.g., controlled intervention that reduces corruption and recovers accuracy)?
+5. Choice of projection method and scope: For orthogonality constraints you use SVD-based projection. Would other projection mechanisms (e.g., Cayley transform, retraction-based manifold updates) lead to different persistence behavior? How general is the effect across manifold types beyond the sphere/Stiefel cases studied?
+6. Reproducibility: Will you release code for the synthetic benchmarks and neural network experiments? Please include seed values and full hyperparameter details for the reported best models.
+7. Quantitative fit and assumptions: The model fit R^2=0.54 is only moderate. Can you comment on deviations and what aspects of the dynamics (nonlinear gradients, parameter correlations) contribute most to the mismatch? Can you provide additional diagnostics (e.g., distribution of m^T w relative to the 1/d heuristic)?
+
+Flag For Ethics Review: No. The paper concerns optimization dynamics and algorithmic/empirical analyses in machine learning. There is no apparent dual-use or harmful application content, no handling of sensitive personal data, and no ethical concerns requiring special review.
+
+Rating: 6
+
+Confidence: 4
+
+Code Of Conduct: Yes

@@ -1,0 +1,36 @@
+Summary: This paper identifies and analyzes a practical but underappreciated source of mismatch between classical constrained-optimization theory and deep-learning practice: the fact that modern optimizers maintain state (momentum/adaptive moments) across hard projection steps. The authors show that the common implicit "momentum-reset" assumption in textbook analyses leads to qualitatively and quantitatively wrong predictions. They introduce the "momentum persistence effect", derive a corrected (tractable, heuristic) model that predicts super-linear scaling with learning rate and projection frequency and saturation at a much larger steady-state corruption, and validate these predictions in controlled quadratic/sphere experiments and in two neural-network case studies (orthogonality in Transformers via OSPA; spectral normalization in ResNet-18). They provide actionable design guidance (prefer soft penalties, co-design projections and optimizers, consider momentum resets or infrequent projections).
+
+Soundness: 3
+Presentation: 3
+Contribution: 4
+
+Strengths: 
+- Identifies a clear, concrete, and practically-relevant mismatch between common theoretical assumptions and widely used implementations. The "momentum persistence" framing is intuitive and explains multiple empirical phenomena.
+- Solid experimental design in the simplified quadratic/sphere setting that isolates the effect (reset vs persistent momentum), showing different scaling laws and a large amplification factor.
+- Demonstrates transfer of the phenomenon to real neural networks (Transformer orthogonality and CNN spectral normalization) with measurable performance gaps that align with theory-driven predictions (larger gaps in noisy / low-data regimes, sensitivity to τ and α).
+- Provides a closed-form recurrence and steady-state expression that, although derived under simplifying assumptions, captures several non-trivial behaviors (α^2 scaling, τ-amplification and saturation).
+- Actionable practitioner guidance and pointers to follow-up research directions (constraint-aware optimizers, projection-aware state management).
+
+Weaknesses:
+- The theoretical analysis depends crucially on Assumption 4 (approximate decorrelation: E[(m^T w)^2] ≈ (1/d) E[||m||^2]) and other simplifications (small step size, independent noise). This heuristic is plausible in high-dimensions but is not proven; it limits the rigor and quantitative correctness of magnitude predictions. The reported R^2 = 0.54 on the fit suggests moderate (not tight) quantitative agreement.
+- The treatment of real-world optimizers is somewhat simplified. The theoretical model uses a single momentum buffer m; but many widely-used optimizers (Adam, AdamW) have both first-moment and second-moment buffers and additional normalization effects. It's unclear how the second-moment/adaptive scaling (and its interaction with projections) affects the derived scaling laws. The experiments use Adam for Transformers and SGD+momentum for CNNs, but ablations across optimizer families (Adam variants, RMSProp, plain SGD, AdamW with different decays) are limited.
+- The neural-network experiments, while convincing, use a modest number of seeds (5 for BERT experiments, 3 for ResNet), limited datasets/configurations, and report relatively small absolute gains in some regimes; more sweeps and statistical analysis would strengthen claims. Also details on computational overhead and chosen best hyperparameters (how selection was done without leak) should be fully transparent.
+- Some confounding mechanisms are not fully explored: projections (SVD) may introduce numerical artifacts, projections change parameter norms and may interact with weight decay/regularization, and the second-moment accumulator in Adam may adapt in a way that obscures or amplifies effects. The paper suggests resetting momentum as a remedy but does not experimentally explore alternatives (projecting the momentum into the tangent space, partially damping momentum, resetting second moments, or projection-aware transforms).
+- The claim of "10,000×" underestimation by classical theory (and some other absolute-magnitude comparisons) risk overstatement: classical analyses were never intended to make precise finite-sample numeric predictions in these highly stateful settings. The paper would benefit from tempering such claims and clarifying regimes where classical bounds are/aren't expected to be tight.
+
+Questions:
+1. How sensitive are the measured amplification factors and scaling exponents to different optimizer implementations? Specifically: Adam vs AdamW vs RMSProp vs plain SGD (with/without momentum) and to the presence/absence of learning-rate schedules, gradient clipping, and weight decay. Please provide ablations.
+2. For adaptive optimizers (Adam-family) the second-moment buffer (v) rescales updates. Do you observe qualitatively different persistence effects when you (a) reset only the first moment, (b) reset both first and second moments, or (c) project the optimizer momentum into the tangent space instead of zeroing it? Empirical comparisons would clarify practical mitigations.
+3. The theoretical derivation relies on the approximate decorrelation (Assumption 4). Can you provide empirical diagnostics validating this approximation in the quadratic setting and in DNNs (e.g., measured E[(m^T w)^2] vs (1/d)E[||m||^2] over time, per-layer statistics)?
+4. Relatedly, the fit R^2 = 0.54 suggests room for improvement. Can you identify the primary sources of residual variance (finite-d sample noise, violation of decorrelation, nonlinear effects)? Could refining the model (e.g., incorporating leading correlations or layerwise structure) substantially improve fit?
+5. How do projection-aware remedies compare empirically: (i) resetting momentum buffers after projection (you note this as a principled option), (ii) projecting momentum onto the tangent space at the new parameter, (iii) applying a short “burn-in” of small LR after projection, (iv) using lower projection frequency τ? Please report wall-clock and optimization tradeoffs.
+6. For the Transformer experiments, please clarify whether SVD projections were applied to each head weight separately and how the projection interacts with parameter tying / layer normalization. Also please state compute budgets and whether hyperparameter choices for soft vs hard were chosen fairly (equal tuning budget).
+7. Does the persistence effect manifest similarly if instead of exact SVD projections one uses cheaper approximate orthogonalization (one-step Newton/QR/power-iteration approximations)? This matters for practical scalability.
+
+Flag For Ethics Review: No. There are no apparent ethical concerns in the work (no human-subject data privacy issues or evident dual-use harm). The paper reports algorithmic/experimental results about optimizers and models.
+
+Rating: 8
+
+Confidence: 4
+
+Code Of Conduct: Yes

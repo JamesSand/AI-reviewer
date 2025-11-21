@@ -1,0 +1,37 @@
+Summary: The paper investigates why soft, penalty-based constraints often outperform hard projections in deep learning. It identifies a previously overlooked mechanism—the momentum persistence effect—arguing that classical projected-optimization analyses implicitly assume momentum is reset at projections, while real optimizers persist momentum across projections. Using a quadratic-on-sphere testbed, the authors show large mismatches with classical predictions (magnitude and scaling in α, τ, κ), propose a corrected model predicting saturation and super-linear scaling due to persistent momentum, and validate in Transformers (OSPA) and CNNs (spectral constraints). The work offers design guidance: prefer soft penalties or co-design projections with optimizer state.
+
+Soundness: 3
+Presentation: 3
+Contribution: 4
+
+Strengths: 
+- Clear identification of a plausible implementation-theory mismatch: momentum buffers are typically not reset at projections, which can corrupt dynamics.
+- Simple, controlled testbed that isolates the effect and demonstrates strong quantitative discrepancies with “reset” models.
+- Corrected model predicts saturation and super-linear dependencies; qualitative trends line up with experiments and provide actionable guidance.
+- Cross-domain validation in Transformers and CNNs showing consistent advantage for soft constraints and sensitivity to α and τ, matching the proposed mechanism.
+- Practical implications are well articulated and potentially impactful for practitioners.
+
+Weaknesses: 
+- Theoretical analysis relies on a strong heuristic decorrelation assumption (Assumption 4) and uses inequalities with unspecified constants; the derivation is not rigorous and admits limited quantitative fidelity (e.g., R² ≈ 0.54, amplification factor gap).
+- Conceptual inconsistency around the corruption metric: ∆m is defined independent of α, yet later α² enters via an energy-injection argument; the link from radial work to the chosen corruption metric is not fully justified and may mix units.
+- Limited optimizer coverage in core theory/experiments: the toy model is SGD with momentum; claims about Adam and adaptive methods are asserted but not systematically evaluated (e.g., first/second moment interactions, bias correction, decoupled weight decay).
+- Missing strong baselines that could neutralize persistence, e.g., Riemannian momentum/Adam, momentum projected to tangent space at each step, or explicit momentum reset/tangent re-projection in neural network experiments (not only in the toy setting).
+- Neural experiments may have fairness confounds: “best per variant” hyperparameter selection rather than matched grids, potential differences in compute/overhead (e.g., SVD vs. penalty), and use of a hard SVD spectral constraint rather than the standard power-iteration SN baseline; effect sizes in CNNs are modest.
+- κ dependence and some scaling exponents are reported from relatively small grids; conclusions on exponents (1.5–2) are suggestive but not definitive.
+- No ablation on projection frequency/learning rate with equalized training budgets to rule out training time/compute artifacts; no release of code is mentioned.
+
+Questions: 
+- Can you reconcile the definition of momentum corruption ∆m (independent of α) with the α² scaling introduced via the radial work argument? Please provide a consistent, dimensionally coherent derivation or redefine the corruption metric to match the energy argument.
+- How do results change with Adam/AdamW, including bias correction and second-moment buffers? Do you observe similar saturation and scaling, and how does v_t interact with the effect?
+- Can you include Riemannian baselines (e.g., Riemannian SGD/Adam or tangent-space momentum updates) and a “momentum tangent-projection” baseline to demonstrate that co-design mitigates the effect in neural networks?
+- For the neural results, can you ensure matched hyperparameter sweeps and compute budgets across soft vs. hard methods, report results for the same τ, α settings, and compare to standard spectral normalization (power iteration) rather than SVD-based hard projection?
+- How robust are the κ-scaling results across different A and problem dimensionalities? Do the exponents persist under different noise models?
+- Can you provide code and scripts to reproduce the toy and neural experiments?
+
+Flag For Ethics Review: No. If yes, explain why.
+
+Rating: 6
+
+Confidence: 4
+
+Code Of Conduct: Yes

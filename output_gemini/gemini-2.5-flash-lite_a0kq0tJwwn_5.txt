@@ -1,0 +1,27 @@
+Summary: This paper addresses a persistent empirical puzzle in deep learning: why soft, penalty-based constraints often outperform their mathematically exact, hard-projected counterparts. The authors identify and rigorously analyze the "momentum persistence effect" as the underlying mechanism. They argue that classical optimization theory implicitly assumes momentum resets after each projection, which contradicts practical implementations of optimizers like Adam and SGD. This paper develops a new theoretical model that accounts for momentum persistence, leading to predictions about saturation behavior and super-linear scaling laws that are validated through controlled experiments on a quadratic problem and large-scale Transformer models. The findings provide concrete design principles for practitioners, advocating for soft constraints when possible and careful co-design of hard constraints with optimizers when necessary.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+* **Clear Problem Identification:** The paper clearly articulates a long-standing empirical puzzle in deep learning that lacks theoretical explanation.
+* **Novel Theoretical Insight:** The identification and formalization of the "momentum persistence effect" is a significant theoretical contribution.
+* **Rigorous Theoretical Framework:** The derivation of a new theoretical model that accounts for momentum persistence and its subsequent validation against empirical results is a major strength. The paper provides a solid mathematical foundation for its claims.
+* **Comprehensive Experimental Validation:** The authors conduct thorough experiments, starting with a simplified quadratic problem and extending to realistic Transformer models (OSPA) and CNNs (spectral normalization). This multi-faceted validation significantly strengthens the credibility of their findings.
+* **Actionable Practical Guidance:** The paper successfully translates its theoretical findings into concrete design principles for practitioners, which is highly valuable for the deep learning community.
+* **Excellent Presentation:** The paper is well-written, well-structured, and clearly explains complex concepts. The figures and tables are informative and effectively support the arguments. The distinction between the classical (reset) and practical (persistent) momentum models is made very clear.
+
+Weaknesses:
+* **Heuristic Approximation in Theory:** In Section A.1, the authors acknowledge a heuristic approximation (Assumption 4) regarding the decorrelation of momentum and parameter position. While they provide empirical validation for its effectiveness, a purely first-principles derivation without this assumption remains an open challenge.
+* **Limited Scope of "Hard" Constraints:** The paper primarily focuses on projection-based constraints (e.g., SVD for orthogonality, scaling for spectral norm). While these are common, other forms of hard constraints might behave differently.
+
+Questions:
+1.  Could the authors elaborate further on potential limitations or scenarios where the momentum persistence effect might be less pronounced or even beneficial? Are there specific optimizer types or constraint formulations where the "reset" assumption might actually be more accurate, or where persistence leads to significantly *better* outcomes than soft constraints?
+2.  The paper mentions that the "momentum persistence effect emerges as the missing mechanism that bridges theory and practice." Beyond the specific constraints studied, are there other optimization phenomena in deep learning (e.g., related to weight decay, learning rate scheduling, or other regularization techniques) that might be similarly explained by subtle interactions between optimizer state and algorithmic operations?
+3.  Regarding the heuristic approximation in Assumption 4, while empirically validated, what are the theoretical implications of this approximation on the bounds and guarantees of the derived model? Specifically, could this approximation lead to overestimation or underestimation of corruption in certain complex scenarios that are not captured by the current experimental setup?
+
+Flag For Ethics Review: No.
+
+Rating: 10
+Confidence: 5

@@ -1,0 +1,27 @@
+Summary: This paper addresses a long-standing empirical puzzle in deep learning: why soft constraints often outperform hard projections despite the latter providing mathematically exact constraint satisfaction. The authors propose a novel theoretical mechanism, the "momentum persistence effect," to explain this phenomenon. They argue that classical optimization theory implicitly assumes momentum is reset after each projection, which is contradicted by modern optimizers like Adam and SGD. This persistence leads to compounding corruption that causes saturation at levels significantly higher than predicted by classical models. The paper presents a corrected theoretical model that accurately predicts empirical observations and validates it through experiments on a simplified quadratic problem and in large-scale Transformer and CNN models. The work offers concrete design principles for practitioners.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+1. **Novel Theoretical Insight:** The identification and detailed analysis of the "momentum persistence effect" as the root cause of the theory-practice gap in constrained optimization is a significant theoretical contribution.
+2. **Rigorous Empirical Validation:** The paper systematically validates its theoretical claims through controlled experiments on a simplified problem and then demonstrates their relevance in practical deep learning architectures (Transformers and CNNs).
+3. **Clear Explanation of Phenomenon:** The explanation for why soft constraints outperform hard projections is intuitive and well-supported by the proposed mechanism.
+4. **Practical Implications:** The paper provides actionable design principles for practitioners, which is highly valuable for the community.
+5. **Comprehensive Analysis:** The theoretical derivation is thorough, covering scaling laws, saturation behavior, and comparisons with classical theory.
+6. **Well-Written and Organized:** The paper is well-structured, making complex ideas accessible and easy to follow.
+
+Weaknesses:
+1. **Heuristic Approximation in Theory:** While the theoretical model is effective, it relies on a heuristic approximation (Assumption 4) for magnitude estimation, which the authors acknowledge. While empirically validated, a fully rigorous mathematical justification for this approximation would strengthen the theoretical foundations.
+2. **Limited Scope of Case Studies:** While the Transformer and CNN case studies are strong, further validation across a broader range of architectures and constraint types could enhance the generalizability claims.
+
+Questions:
+1. The paper acknowledges Assumption 4 as a heuristic. Could the authors elaborate on potential future work to rigorously derive the magnitude predictions without this approximation, perhaps by leveraging more advanced tools from stochastic differential geometry?
+2. The paper suggests that momentum persistence could sometimes be beneficial. Are there specific scenarios or constraint types where this effect might be desirable, or does it generally lead to performance degradation in practical deep learning optimization?
+3. The paper focuses on SGD with momentum and Adam. Do the authors anticipate similar momentum persistence effects with other advanced optimizers, such as those with more complex adaptive learning rate mechanisms or second-order information?
+
+Flag For Ethics Review: No
+
+Rating: 10
+Confidence: 5

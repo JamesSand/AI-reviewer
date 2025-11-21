@@ -1,0 +1,31 @@
+Summary: This paper addresses a long-standing empirical puzzle in deep learning: why soft, penalty-based constraints often outperform their hard-projected counterparts. The authors identify a "momentum persistence effect" as the root cause, arguing that classical constrained optimization theory implicitly assumes optimizer momentum is reset after each projection, an assumption contradicted by standard implementations like Adam and SGD. Through controlled experiments on a tractable quadratic problem, the paper rigorously demonstrates that this "momentum reset" model catastrophically fails to predict corruption magnitudes and scaling laws. They then propose a corrected theoretical model that accounts for momentum persistence, accurately predicting saturation behavior and super-linear scaling. The theory's generality is validated through two large-scale neural network case studies (Orthogonal Subspace Projection Attention in Transformers and Spectral Normalization in CNNs). The findings highlight a critical blind spot in current theory and provide actionable design principles for practitioners.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+*   **Addresses a fundamental and persistent puzzle:** The paper tackles a well-known, practical observation (soft > hard constraints) that lacked a clear theoretical explanation, making it highly relevant to the deep learning community.
+*   **Rigorous and systematic methodology:** The paper starts with a controlled theoretical model, systematically disproves its predictions with empirical evidence, develops a corrected theory, and then validates it extensively. This multi-faceted approach significantly strengthens the claims.
+*   **Compelling empirical evidence:** The controlled experiments clearly demonstrate the catastrophic failure of classical "momentum reset" models and the accuracy of the proposed "momentum persistence" model, showing orders of magnitude differences and distinct scaling laws.
+*   **Strong cross-domain validation:** The generalization of findings to state-of-the-art Transformers (OSPA) and CNNs (spectral normalization) validates the practical relevance and universality of the momentum persistence effect in complex deep learning architectures.
+*   **Clear theoretical contribution:** The paper identifies a crucial implicit assumption in classical theory (momentum reset) that deviates from real-world optimizers. The corrected theoretical model provides a more accurate framework for understanding constrained optimization dynamics.
+*   **Actionable insights for practitioners:** The derived design principles (e.g., prefer soft constraints, infrequent projections, moderate learning rates, co-design optimizer and projection) offer practical guidance for improving constrained deep learning systems.
+
+Weaknesses:
+*   **Heuristic approximation in theoretical derivation:** The paper acknowledges that Assumption 4 (approximate decorrelation, line 572) is a heuristic approximation that enables tractability but does not provide rigorous magnitude predictions, despite capturing scaling laws. While justifiable for this work's scope, a fully rigorous analysis without this approximation remains a future challenge.
+*   **R-squared value in long-term validation:** The R-squared value of 0.54 for the theoretical saturation curve fit (Figure 2b) is reasonable, but indicates there might still be some uncaptured dynamics or approximations limiting perfect agreement, even if it's a significant improvement over classical theory.
+*   **Limited detail on neural network scaling laws in main text:** While the appendix provides more details, a more concise summary of how the scaling laws identified in the quadratic problem directly manifest in the performance degradation of OSPA-Hard and Spectral Normalization in the main paper could strengthen the connection for readers.
+
+Questions:
+*   Could the authors elaborate on the computational overhead or practical challenges of implementing "explicit momentum resets after projections" (lines 435-437) for optimizers like Adam, especially in high-dimensional or large-scale settings?
+*   Beyond the general effects of high noise/low data, are there specific architectural properties or constraint types that might make certain models more or less susceptible to the negative impacts of momentum persistence?
+*   The paper calls for future work on rigorous convergence theory without Assumption 4. Can the authors speculate on the mathematical tools or approaches that might be necessary to overcome this challenge?
+
+Flag For Ethics Review: No
+
+Rating: 8
+
+Confidence: 5
+
+Code Of Conduct: Yes

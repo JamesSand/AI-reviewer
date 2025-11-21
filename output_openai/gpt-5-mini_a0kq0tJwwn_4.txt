@@ -1,0 +1,35 @@
+Summary: The paper identifies a concrete mechanism — the "momentum persistence effect" — that explains why soft (penalty-based) constraints often outperform hard (projection-based) constraints in deep learning when using stateful optimizers (SGD+momentum, Adam). The authors show that classical projected-gradient analyses implicitly assume the optimizer momentum is reset at projection boundaries; in practice momentum persists and stale momentum compounds across cycles, producing much larger "momentum corruption" than predicted by classical models. They develop a corrected, tractable theoretical model for a constrained quadratic on the sphere that incorporates persistence and predicts (i) super-linear scaling of corruption with learning rate α and projection frequency τ, (ii) exponential/amplified dependence on momentum β, and (iii) saturation to a steady-state corruption M∞ rather than unbounded growth. The paper validates these claims with controlled quadratic experiments (reset vs persistent momentum), long-run saturation measurements, and two realistic case studies: orthogonality constraints in Transformers (OSPA; soft vs hard) and spectral normalization in ResNet-18. Empirical results show consistent amplification factors (≈5–7×) and task-level performance gaps favoring soft constraints, especially in noisy/low-data regimes. The authors derive practitioner-facing design principles and discuss broader implications for constraint-optimizer co-design.
+
+Soundness: 3
+Presentation: 3
+Contribution: 4
+
+Strengths:
+- Clear, focused identification of an important, practically-relevant mechanism that bridges a concrete theory/practice gap. The paper isolates the momentum-persistence assumption and experimentally demonstrates its centrality.
+- Combination of theory and empirical work is well-structured: a tractable analytic model that yields falsifiable predictions; controlled synthetic experiments that decisively contrast reset vs persistent momentum; and validations in large neural networks (Transformers, ResNet) that show tangible task-level impacts.
+- Practical implications are direct and actionable (prefer soft constraints with stateful optimizers; when hard projections are required, co-design projection frequency, learning rate, and momentum handling).
+- The corrected model explains multiple empirical phenomena simultaneously (α^2 scaling, super-linear τ scaling, saturation), strengthening the claim that a single mechanism underlies these observations.
+
+Weaknesses:
+- The theoretical analysis depends on a heuristic decorrelation assumption (Assumption 4: E[(m^T w)^2] ≈ (1/d)E[||m||^2]) and other simplifying approximations. The authors acknowledge this, but the derivation therefore stops short of a fully rigorous, general proof; some constants and the R² = 0.54 fit indicate only moderate quantitative agreement in places.
+- The analysis focuses primarily on SGD with classical momentum; while experiments include Adam, the treatment of adaptive optimizers (first/second moment buffers, bias correction, non-uniform preconditioning) is not developed theoretically. For Adam-like optimizers the dynamics (and what "momentum corruption" means) can differ substantially.
+- The claim that "all standard implementations maintain momentum buffers across projection steps" is too broad. In practice, some codebases or custom projection implementations may adjust or reset optimizer state (or use reparametrizations). The paper would benefit from a more careful survey of real implementations and the interaction with popular libraries (PyTorch, TensorFlow, optimizers that support state updates on parameter transforms).
+- Neural experiments, while convincing, could use further ablations: e.g., (a) explicit momentum-reset-after-projection in large models (to test cost/benefit), (b) hybrids such as partial damping of momentum at projection time, (c) sensitivity to projection algorithm (SVD vs approximate orthonormalization / power-method), and (d) more random seeds / different datasets to quantify variance. The reported seed counts (3 or 5) are reasonable but modest.
+- Some empirical numbers (e.g., corruption magnitudes of 47.6 vs 8.7, or 951 in ResNet) are large but their practical units/interpretation could be clarified: how do these translate to parameter changes, gradient norms, or downstream task loss? The paper interprets them well qualitatively but explicit normalization would help reproducibility and understanding.
+
+Questions:
+1) Adam and other adaptive methods: can the authors provide more analysis (theoretical or empirical) of how adaptive preconditioning (second moments) changes the persistence dynamics? Does the "corruption amplification" factor retain the same functional form for Adam's first/second moments, or do different terms dominate?
+2) Momentum-reset strategies: in practical large-scale training, did you try explicitly resetting (or partially damping) momentum buffers immediately after each projection in the Transformer or ResNet experiments? If so, what was the performance/cost tradeoff? If not, can you comment on feasibility (compute cost, convergence)?
+3) Implementation variability: have you surveyed popular codebases/libraries to document how projections are typically implemented in practice with respect to optimizer state? If some implementations already update moment estimates on projection, does that mitigate the effect?
+4) Projection type & magnitude: does the persistence effect strength depend qualitatively on the projection operator used (full SVD orthonormalization vs cheaper approximate methods, or projection onto other manifolds)? Any experiments or theory to indicate sensitivity?
+5) Assumption 4 justification: can you provide additional empirical diagnostics to support the decorrelation approximation (e.g., distributions of m^T w / ||m|| across dimensions, or dependence on d)? How does the model perform across different dimensionalities?
+6) Task-level cost: for practitioners, can you quantify (a) how often soft constraints must be tuned to match constraint satisfaction properties of hard projections, and (b) in which exact regimes (task sizes, dataset sizes) the soft→hard gap is most consequential?
+7) Reproducibility: do you plan to release code and exact training scripts (OSPA implementation, projection code, corruption-measure instrumentation) to enable replication?
+
+Flag For Ethics Review: No. The paper addresses algorithmic/optimization dynamics, uses standard ML datasets and synthetic experiments. There are no human subjects, biological agents, or clear dual-use/ethical harms requiring special review.
+
+Rating: 8
+
+Confidence: 4
+
+Code Of Conduct: Yes

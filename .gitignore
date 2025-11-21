@@ -1,0 +1,22 @@
+# API Keys and Secrets
+env.yaml
+*.env
+
+# Output directories
+# output_*/
+# analyze_image/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

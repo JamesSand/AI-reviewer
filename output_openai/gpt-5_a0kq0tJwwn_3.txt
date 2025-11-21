@@ -1,0 +1,38 @@
+Summary: The paper investigates why, in practice, soft/penalty constraints often outperform hard projections in deep learning with stateful optimizers. It claims that classical analyses implicitly assume momentum is reset at projection steps, whereas real optimizers persist momentum, leading to compounding “momentum corruption.” Using a quadratic-on-sphere toy problem, the authors show that a reset-based model fails to match empirical scaling with learning rate, projection frequency, and conditioning. They propose a corrected persistence model predicting super-linear α and τ scaling and saturation to a steady-state corruption level. The paper validates these ideas on Transformers with OSPA and CNNs with spectral normalization, where soft constraints outperform hard projections more strongly in noisy/low-data regimes. It offers design principles for co-designing constraints and optimizers.
+
+Soundness: 3
+Presentation: 3
+Contribution: 3
+
+Strengths: 
+- Clearly articulated and practically relevant problem that many practitioners encounter.
+- Persuasive controlled experiments isolating the effect of momentum persistence vs reset; the qualitative mismatches with the “classical” model are compelling.
+- Simple corrected model that captures key qualitative behaviors (super-linear scaling and saturation), providing an actionable mental model and testable predictions.
+- Cross-domain validation in both Transformers (OSPA) and CNNs (spectral normalization), with performance gaps increasing in high-noise regimes as predicted.
+- Practical guidance and design principles that are easy to adopt (prefer soft constraints; reduce projection frequency; consider momentum management at projections).
+
+Weaknesses: 
+- The theoretical development relies on a strong heuristic decorrelation assumption and yields only approximate bounds; several key constants are not rigorously justified. Fit quality is modest (e.g., R² ≈ 0.54), suggesting missing factors or model mismatch.
+- The claim that “classical theory assumes momentum reset” seems under-referenced and potentially a strawman. There is related work on projected/inertial methods, Riemannian heavy-ball, vector transport, proximal/FB with momentum, and optimizer state handling at constraints that should be discussed and differentiated more carefully.
+- Missing crucial baselines that would strengthen the thesis: (a) projecting or transporting the momentum into the tangent space post-projection; (b) explicit momentum reset ablations in the NN experiments; (c) Riemannian optimizers or constraint-aware updates (e.g., vector transport) as “hard constraint but state-aware” alternatives.
+- The proposed remedy remains largely prescriptive rather than algorithmic. A concrete, constraint-aware momentum update (or simple patch like tangent projection of momentum) and its empirical assessment would substantially increase impact.
+- External validity gaps: results are shown for a few tasks and settings; Adam/AdamW behavior is asserted but limited direct ablation is presented; sensitivity to β, τ, α across a wider grid and across optimizers is not thoroughly explored.
+- Some definitions and measurements (e.g., “corruption units” in CNN spectral norm case, tangent/radial interpretation when the constraint is σ1(W)=1) need formalization to ensure they are comparable across layers and models.
+- Reproducibility details are partially deferred to appendices; a code release or more extensive protocol details would help.
+
+Questions: 
+- Can you provide citations demonstrating that prior analyses of projected momentum explicitly or implicitly reset momentum, and contrast with works that preserve or transport momentum on manifolds? How does your model differ from Riemannian heavy-ball with vector transport?
+- What happens if you project/transport the momentum into the tangent space after each projection? Does this recover the “reset” behavior without losing acceleration? Please add ablations in both toy and NN settings.
+- How sensitive are the results to β and τ across optimizers (SGD-m, Adam, AdamW)? Please include broader sweeps and show whether the amplification factor matches theory across β.
+- In the CNN spectral norm experiment, how exactly is “discarded momentum” defined for σ1(W)=1 constraints, and how are magnitudes normalized across layers? Can you relate those units back to your toy model’s metric?
+- Could the observed gaps partially stem from differences in optimization landscapes induced by the penalty versus projection (e.g., penalty smoothing/implicit regularization) rather than solely momentum persistence? Any controls to disentangle?
+- Do the conclusions hold for constraints that are implemented via inexpensive approximate projections (e.g., power-iteration-based spectral normalization) executed every step?
+- Can you report results where you co-design: lower τ, lower α, and momentum reset/transport, to see whether hard constraints close the gap with soft constraints as your design principles suggest?
+
+Flag For Ethics Review: No. If yes, explain why.
+
+Rating: 6
+
+Confidence: 3
+
+Code Of Conduct: Yes

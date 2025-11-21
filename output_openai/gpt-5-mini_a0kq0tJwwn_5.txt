@@ -1,0 +1,42 @@
+Summary: The paper identifies and studies the "momentum persistence effect" — the idea that stateful optimizers (SGD with momentum, Adam) that maintain their internal buffers across discrete constraint projections accumulate "stale" momentum that is incompatible with the projected parameters and therefore leads to compounding corruption. The authors show that classical projected-gradient analyses implicitly assume a momentum reset at projection time and therefore make systematically incorrect predictions (wrong scaling laws and underestimation of corruption magnitudes). They introduce a corrected recurrence model that accounts for persistence, derive closed-form steady-state corruption M∞ ∝ α^2 τ / (1 − β^{2τ}) (under simplifying assumptions), and validate the model on (i) a controlled quadratic-on-sphere problem and (ii) two realistic neural-network case studies (orthogonality constraints in Transformers using OSPA and spectral normalization in ResNet-18). Empirically they report large amplification of corruption (≈5–7×) and show consistent performance gaps favoring soft (penalty) constraints over hard projections, especially in high-noise / low-data regimes. They provide practical design guidelines: prefer soft constraints or co-design projections with optimizer behavior (e.g., reset or damp momentum).
+
+Soundness: 3
+Presentation: 3
+Contribution: 4
+
+Strengths:
+- Nice, concrete observation that links a real implementation detail (momentum buffers surviving projection steps) to a persistent, measurable optimization pathology. The mechanism is intuitive and plausibly explains a widespread empirical pattern (soft > hard constraints).
+- The paper combines theoretical modeling, controlled toy experiments, and realistic neural-network experiments. This multi-pronged approach strengthens the plausibility of the claim and its relevance to practice.
+- The corrected recurrence model is simple, interpretable, and makes falsifiable predictions (α^2 scaling, super-linear τ dependence, saturation). The model explains why corruption saturates and why amplification factors can be large.
+- The paper provides practical guidance (hyperparameter/optimizer co-design, when to reset momentum, favor penalties) that is directly actionable for practitioners.
+- The write-up is generally clear, well-organized, with useful figures and appendices documenting derivations and experimental protocols.
+
+Weaknesses:
+- The theoretical analysis depends on a nontrivial heuristic (Assumption 4: approximate decorrelation so that E[(m^T w)^2] ≈ (1/d) E[||m||^2]) and a small-step approximation. The authors acknowledge this, but the extent to which the heuristic affects quantitative claims (magnitudes, fitted amplification) is not fully characterized. Fit quality (R^2 ≈ 0.54) is moderate; calling it "excellent" is overstated.
+- Some experimental details are insufficiently reported / controlled:
+  - For Transformer (OSPA) experiments: it is unclear whether hyperparameter tuning was equally thorough for hard and soft variants (how λ was selected vs projection τ/α). Differences in tuning could bias reported gaps.
+  - The cost/compute trade-offs of SVD-based hard projections vs soft penalties are not discussed; hard projections often carry substantial compute overhead that could influence practical adoption.
+  - For Adam, the paper focuses on momentum corruption but gives limited discussion of the role of second-moment buffers (v_t) and Adam-specific bias-corrections — both could interact with projections and affect corruption dynamics differently from vanilla SGD with momentum.
+  - Seed counts are low in some experiments (3 seeds for CNNs, 5 for Transformers); reported std devs help but stronger statistical evidence would be beneficial.
+- Some claims are phrased too strongly relative to evidence. Examples: "orders of magnitude underprediction" vs classical theory — the reported R^2 and 5–7× amplification are meaningful but not necessarily evidence that all classical theory is fundamentally invalid in all regimes. The distinction between qualitative mechanism identification (clearly valuable) and quantitative universality should be clearer.
+- The model's assumptions (small α||m||, independence of noise, decorrelation approximation) limit the theoretical generality; the paper positions this as a tractable first model but more emphasis on regimes of validity is warranted.
+- The paper does not evaluate or report some natural mitigation strategies other than "reset momentum": e.g., partial momentum damping for projected parameters, reinitializing only first vs. second moments, layer-wise learning-rate reductions, or projection-aware optimizer variants. Ablations of these would increase practical impact.
+
+Questions (requested clarifications / suggested experiments):
+1. Adam-specific dynamics: did you measure the contributions from Adam's v_t (second moment) buffer to the corruption? In practice v_t affects effective step sizes per coordinate — could persistent v_t also amplify or mitigate corruption? Please include experiments comparing (a) SGD with momentum, (b) Adam with full buffers maintained, (c) Adam with only m_t reset after projection, and (d) Adam with only v_t reset, to tease apart which buffers drive the effect.
+2. Momentum reset strategy granularity: in neural experiments, did you attempt resetting momentum only for the projected parameters (e.g., query/key/value matrices) rather than globally? If so, how effective was that relative to global resets? This is an important mitigation that practitioners could adopt.
+3. Effect of projection magnitude: do the amplification factors correlate with the L2 distance moved by the projection operation? It seems plausible that small projections produce small mismatch and smaller corruption; please report distribution of projection magnitudes and their correlation with accumulated corruption.
+4. Hyperparameter tuning fairness: please describe in detail how hyperparameters were tuned for soft vs hard variants to ensure fair comparison (grid search ranges, selection metric). If the projection frequency τ was treated as a tunable hyperparameter, was the soft variant allowed comparable tuning complexity?
+5. Compute cost: SVD-based projections and spectral-normalization projections have nontrivial computational cost. Do the soft variants obtain their benefit in matched-compute budgets? Provide wall-clock or FLOP comparisons (or at least qualitative discussion).
+6. Generalization: beyond orthogonality and spectral-norm constraints, have you tried other projection types (e.g., simple clipping, quantization steps) that apply discrete parameter modifications? Do you observe similar persistence effects there, as you hypothesize?
+7. Statistical robustness: please increase the number of seeds for the Transformer experiments (preferably ≥10) and report confidence intervals for performance gaps, especially in the low-data setting where variance can be large.
+8. Model fit and sensitivity: the R^2 of the saturation fit is ~0.54. Can you provide residual diagnostics, confidence intervals on fitted parameters, and sensitivity of fit to the decorrelation approximation? Also, can you provide plots or statistics showing how often the theoretical amplification factor (1 − β^{2τ})^{-1} matches the empirical amplification across parameter sweeps?
+9. Release artifacts: please confirm that code, seeds, and exact hyperparameter lists (for reported best runs) will be released to enable reproduction.
+
+Flag For Ethics Review: No. The paper concerns optimization algorithms and model training; it does not involve human subjects, sensitive personal data, deception, dual-use biological methods, or other domains that typically require ethical review. No obvious ethical risks are apparent from the content.
+
+Rating: 6
+
+Confidence: 4
+
+Code Of Conduct: Yes

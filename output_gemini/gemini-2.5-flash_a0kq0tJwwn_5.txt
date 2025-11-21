@@ -1,0 +1,30 @@
+Summary: This paper identifies and systematically analyzes the "momentum persistence effect," a fundamental mechanism that resolves a long-standing empirical puzzle in deep learning: why soft, penalty-based constraints often outperform mathematically exact, hard-projected counterparts. The authors demonstrate that classical optimization theory implicitly assumes optimizer momentum resets after each projection, an assumption contradicted by standard implementations (e.g., Adam, SGD). This persistence of "stale" momentum across projection cycles leads to compounding corruption, which classical models fail to predict. Through controlled experiments on a tractable quadratic problem, the paper shows systematic violations of classical scaling laws and magnitude predictions. A corrected theoretical model is developed that accounts for momentum persistence, accurately predicting super-linear scaling with learning rate and projection frequency, and crucially, saturation behavior. The findings are further validated in large-scale Transformer models using Orthogonal Subspace Projection Attention (OSPA) and CNNs with spectral normalization, confirming the generality and practical relevance of the effect, particularly in high-noise, low-data regimes. The paper concludes by offering concrete design principles for practitioners and highlighting a critical blind spot in constrained optimization theory.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+*   **Novel and Fundamental Discovery:** The paper identifies the "momentum persistence effect" as a previously unaccounted-for mechanism, providing a compelling resolution to a persistent and consequential empirical puzzle in deep learning. This is a significant advancement in understanding constrained optimization.
+*   **Rigorous Empirical Validation:** The authors employ a systematic and well-controlled experimental methodology, starting with a tractable quadratic problem to isolate the effect, and then validating its principles in state-of-the-art neural networks (Transformers and CNNs). The direct comparison of "reset" vs. "persistent" momentum is crucial and highly effective.
+*   **Corrected Theoretical Model:** The paper develops a new theoretical model that accurately predicts the scaling relationships (super-linear dependence on learning rate and projection frequency) and saturation behavior of momentum corruption, which classical theory catastrophically fails to explain by orders of magnitude.
+*   **Clear Evidence of Classical Model Failure:** The paper convincingly demonstrates that classical theory's implicit assumption of momentum reset is flawed, leading to incorrect predictions across all key scaling laws and corruption magnitudes.
+*   **Practical Implications:** The findings yield actionable design principles for practitioners, guiding choices between soft and hard constraints, and co-designing hard projections with optimizers (e.g., infrequent projections, moderate learning rates).
+*   **Excellent Presentation:** The paper is exceptionally well-written, clearly structured, and easy to follow. Figures and tables are highly informative and effectively support the arguments. The transparent discussion of the model's heuristic approximation adds to its credibility.
+
+Weaknesses:
+*   The corrected theoretical model, while successful in predicting scaling laws and saturation behavior, relies on a heuristic approximation (Assumption 4) for tractability. While acknowledged by the authors, a fully rigorous, first-principles derivation for absolute magnitudes remains an open theoretical challenge.
+*   The paper primarily focuses on SGD with momentum and Adam. While these are widely used, a brief discussion on how the momentum persistence effect might manifest or be mitigated in other optimizers (e.g., those with different adaptive state mechanisms or implicit momentum) could provide a more comprehensive view.
+
+Questions:
+*   The paper briefly touches on future theoretical directions. Could the authors expand on specific mathematical frameworks (e.g., advanced stochastic differential geometry on manifolds, Lie groups) that might be employed to overcome the heuristic approximation in Assumption 4 and achieve a more rigorous, first-principles derivation for the absolute magnitudes of momentum corruption?
+*   The paper highlights that the negative impact of momentum persistence amplifies in "high-noise, low-data scenarios." Are there more quantitative ways to define or measure the "noise level" and "data scarcity" in a general deep learning context, beyond what was presented in the case studies, to better predict when practitioners should be most cautious about hard projections?
+*   Considering the actionable design principles, are there any specific applications or constraint types where the "guaranteed constraint satisfaction" offered by hard projections (even with optimized co-design strategies like infrequent projections) would still be considered indispensable, despite the inherent momentum corruption effects?
+
+Flag For Ethics Review: No
+
+Rating: 10
+
+Confidence: 5
+
+Code Of Conduct: Yes

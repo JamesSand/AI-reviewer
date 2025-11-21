@@ -1,0 +1,37 @@
+Summary: This paper identifies and studies the "momentum persistence effect": the empirical and theoretical observation that maintaining optimizer state (momentum) across discrete hard projection steps (e.g., orthogonalization, spectral normalization) produces compounding "momentum corruption" that (a) is orders of magnitude larger than classical projected-gradient theory predicts, (b) exhibits super-linear scaling with learning rate and projection frequency, and (c) saturates to a steady-state amplification factor. The authors (i) show classical analyses implicitly assume a momentum reset, (ii) design controlled quadratic-sphere experiments comparing reset vs persistent momentum, (iii) develop a corrected recurrence model that predicts α^2 and τ/(1−β^{2τ}) scaling and saturation, and (iv) validate the phenomenon in Transformers (OSPA hard vs soft) and ResNet18 with hard vs soft spectral normalization. They extract practical design rules (prefer soft penalties, co-design projections with optimizer, or reset momentum when necessary).
+
+Soundness: 3
+Presentation: 3
+Contribution: 4
+
+Strengths:
+- Clear, well-motivated empirical puzzle: explains a commonly-observed practical phenomenon that theory failed to capture.
+- Thoughtful experimental design: isolating reset vs persistent momentum in a simple quadratic-on-sphere setting is an effective causal test.
+- The corrected recurrence model is simple, interpretable, and matches qualitative scaling and saturation observed in experiments.
+- Validation across both synthetic controlled problems and realistic neural networks (Transformer orthogonality and CNN spectral norm) supports generality and practical relevance.
+- Provides actionable guidance for practitioners (when to prefer soft constraints, when to reset momentum, and co-design recommendations).
+
+Weaknesses:
+- The theoretical analysis depends on a key heuristic (Assumption 4: approximate decorrelation, using (1/d)E[||m||^2] for radial component). The authors acknowledge this is heuristic; it weakens claims about quantitative magnitudes and rigorous guarantees.
+- Limited treatment of adaptive optimizers beyond pointing to Adam: Adam has both first- and second-moment buffers and adaptive per-coordinate scaling; the paper does not fully dissect the contributions of first vs second moments or the role of adaptive scaling (β2 effects, epsilon) to the persistence effect.
+- In neural-network experiments, some important ablations are missing or underreported: explicit runs where momentum is reset at projections in real networks, projection variants (different retractions / quasi-projections), and a head-to-head comparison with Riemannian or constraint-aware optimizers.
+- Reproducibility/detail issues: while appendices include many protocol items, full hyperparameter grids, seeds, code availability, and exact corruption measurement procedures (how per-layer momenta were aggregated) are not clearly provided in the main text. Statistical significance is shown in some tables but more comprehensive error bars and hypothesis tests would help.
+- The corrected model fit has modest R^2 (0.54 reported), which the paper frames as "reasonable agreement" — additional analysis of residuals and conditions where the model fails would be helpful.
+- Some bold claims (e.g., 10,000× disagreement with classical theory) depend on particular parameter choices and the measurement definition; these could be contextualized more cautiously.
+
+Questions:
+1. Optimizer details: for experiments labeled "Adam", did you measure / model both first-moment persistence and second-moment (variance) buffers? How much of the corruption amplification comes from first-moment persistence vs interactions with adaptive scaling (β2 and epsilon)? Can your model be extended to explicitly include adaptive per-coordinate scalings?
+2. Resetting momentum in real networks: you show reset vs persistent in the quadratic experiments. Did you run the OSPA-Hard and ResNet-Hard variants with an explicit momentum reset after every projection step? If so, how much of the performance gap is recovered? (If not, please add; it is a critical practical ablation.)
+3. Projection types: your theoretical model assumes Euclidean projection to the sphere. How sensitive are results to the projection operator (e.g., symmetric orthogonalization vs more gentle retractions, approximate SVD, one-step power iteration normalizations)? Do approximate projections reduce corruption?
+4. Low-dimensional / structured settings: Assumption 4 relies on high-D approximate decorrelation. Do you observe the same phenomena in low-d problems (small d) or with strongly structured weights (e.g., convolutional filters with local correlations)? Any empirical evidence or caveats?
+5. Layerwise behaviour: in the networks you measured (ResNet-18), is corruption concentrated in certain layers (early vs late layers, large vs small layers)? That could inform practical mitigations (selective resets).
+6. Hyperparameter sensitivity: what is the sensitivity to β (momentum coefficient) and projection frequency τ in realistic models? Are there practical ranges where hard projections become benign?
+7. Reproducibility and release: will you release code and exact configs? The paper's impact depends on practitioners being able to reproduce measured corruption and mitigation strategies.
+
+Flag For Ethics Review: No. The work is methodological/algorithmic research about optimizer behaviour and constraint enforcement. It does not involve human subjects, personal data, biological agents, or other domains that typically trigger ethical concerns. There are no obvious dual-use or misuse pathways beyond standard ML research.
+
+Rating: 8
+
+Confidence: 4
+
+Code Of Conduct: Yes

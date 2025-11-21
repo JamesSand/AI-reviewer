@@ -1,0 +1,37 @@
+Summary: The paper identifies and characterizes the "momentum persistence effect": the observation that modern stateful optimizers (SGD with momentum, Adam) keep momentum buffers across discrete constraint projection steps, and that this persistence produces compounding, saturating corruption that classical analyses (which implicitly assume momentum reset) do not capture. The authors (1) expose the hidden momentum-reset assumption in classical projected-gradient theory; (2) present a corrected, tractable theoretical model for a quadratic-on-sphere toy problem that predicts α^2 and super-linear τ scaling and saturation; (3) run controlled experiments on the toy problem showing large quantitative discrepancies between reset vs persistent momentum and show a ≈5–7× amplification due to persistence; and (4) validate the phenomenon in realistic neural-network settings (BERT with orthogonality constraints, ResNet-18 with spectral normalization), where soft penalty-based constraints outperform hard projections and degradation grows with learning rate, projection frequency, and in high-noise / low-data regimes. The paper argues this explains why soft constraints often beat hard projections in practice and offers practical design principles (prefer soft constraints; co-design projections and optimizer; consider explicit momentum resets or less frequent projections).
+
+Soundness: 3
+Presentation: 3
+Contribution: 4
+
+Strengths:
+- Important, clear empirical phenomenon: the paper isolates a plausible, concrete mechanism (stale/inherited momentum) that explains a widespread empirical pattern (soft > hard constraints). The identification of the hidden momentum-reset assumption is insightful.
+- Combination of controlled toy analysis and large-scale NN validation: the toy quadratic-on-sphere experiments are carefully designed and reveal large quantitative gaps; the BERT and ResNet experiments demonstrate practical relevance.
+- The corrected recurrence model is simple, interpretable, and makes falsifiable predictions (α^2 scaling, τ amplification, saturation) that match multiple empirical observations.
+- Actionable takeaways for practitioners: clear guidance on when to prefer penalties, when to reduce projection frequency or learning rate, and the idea of co-designing projections with optimizer state.
+- Paper is generally well written and organized; appendices include analytic derivations and experimental protocols.
+
+Weaknesses:
+- The theoretical analysis relies on heuristic approximations (notably Assumption 4: radial momentum ≈ (1/d) total momentum) and treats a quadratic-on-sphere problem. The authors acknowledge this, but it limits the theoretical rigor and the ability to provide tight quantitative predictions in general neural-network settings. R²=0.54 fit is modest.
+- Limited exploration of mitigation strategies in realistic models. While the toy experiments include an explicit "reset" variant, the large-scale NN experiments compare soft vs hard but do not show experiments where hard-projection models are modified (e.g., explicit momentum reset after projection, projecting momentum into tangent space, or damped momentum) to verify practical fixes and tradeoffs at scale.
+- Treatment of adaptive optimizers is cursory. Adam has both first and second moment buffers (m and v). The paper focuses on momentum corruption due to the first moment but does not analyze the role of the second-moment state (v), bias-correction, or variants like AdamW, which could alter dynamics.
+- Ablations and sensitivity sweeps in the large models are limited: only a few τ and α settings were shown. The generality claim across architectures is plausible but would be strengthened by more diverse tasks/architectures (e.g., larger language models, RNNs, other constraints), and more seeds for some results (ResNet runs use 3 seeds).
+- Some important implementation details are missing or only summarized (e.g., exact projection implementations, computational cost of frequent SVDs, whether projections applied per-layer or per-head, how the soft penalty was weighted in each reported run). Reproducibility would benefit from released code and exact hyperparameter logs.
+- The paper does not deeply analyze corner cases where hard projections may still be preferable (e.g., strict safety or certified constraints), nor does it weigh the computational tradeoffs of soft vs hard in constrained settings.
+
+Questions:
+1. Adam / adaptive optimizers: Did you analyze the role of the second-moment buffer (v) in Adam/AdamW? Could adaptive scaling of updates mitigate or exacerbate the persistence effect? Please report experiments or intuition for Adam vs SGD+m differences.
+2. Momentum management strategies: In toy and NN experiments, did you try (a) explicitly resetting the momentum buffer after each projection in the large NN runs, (b) projecting the optimizer momentum onto the tangent space (i.e., transform m to remove radial component), or (c) applying a dampening coefficient to inherited momentum? How do these mitigation strategies affect performance and training stability in the BERT/ResNet experiments?
+3. Projection implementation: For OSPA-Hard and spectral projections, are SVDs computed per-layer per-projection step? What is the added wall-clock cost of frequent projections in your experiments, and how does that trade off with the performance difference?
+4. Correlations & Assumption 4: Can you provide empirical evidence that supports the decorrelation heuristic E[(m^T w)^2] ≈ (1/d)E[||m||^2] in realistic neural networks (e.g., measure empirical ratio across layers and training time)? If that assumption breaks, how sensitive are your predictions?
+5. Scope: Are there constraint families or optimizer variants where hard projections remain clearly superior (e.g., constrained eigenvalue guarantees, projection to discrete parameter spaces)? Can you clarify boundaries of applicability?
+6. Reproducibility: Will you open-source the code (toy experiments + OSPA + ResNet) and full hyperparameter logs? This is important to validate the amplification factors and saturation claims across different random seeds/environments.
+7. Saturation dynamics: You fit Mk = M∞(1 − β^{2τk}) and report R²=0.54. Can you provide more diagnostics on mismatch regions (early-phase dynamics vs late-phase), and how sensitive is the saturation to noise variance σ^2 and dimension d?
+
+Flag For Ethics Review: No. The paper studies optimizer dynamics and constrained optimization mechanisms; it does not introduce new data harvesting, privacy compromises, or biological/dual-use capabilities. No apparent ethical harms specific to the work are evident.
+
+Rating: 8
+
+Confidence: 4
+
+Code Of Conduct: Yes

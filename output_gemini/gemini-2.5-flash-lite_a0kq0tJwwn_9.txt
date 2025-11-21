@@ -1,0 +1,27 @@
+Summary: This paper addresses a long-standing empirical puzzle in deep learning: why soft constraints often outperform hard projections, despite the latter being mathematically exact. The authors identify and theoretically model a mechanism they call the "momentum persistence effect." They argue that classical optimization theory implicitly assumes that momentum buffers are reset after each projection, which contradicts how modern optimizers like Adam and SGD actually work. This persistence leads to compounding corruption in the momentum vector, resulting in performance degradation and incorrect scaling laws compared to theoretical predictions. The paper presents a corrected theoretical model that accurately predicts saturation behavior and super-linear scaling observed empirically. They validate their findings on a simplified quadratic problem and then demonstrate their relevance in large-scale Transformer models using Orthogonal Subspace Projection Attention (OSPA) and in CNNs with spectral normalization. The authors propose practical design principles for practitioners.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+- **Novel and Important Problem:** The paper tackles a fundamental and widely observed phenomenon in deep learning optimization (soft vs. hard constraints) that has lacked a clear theoretical explanation.
+- **Clear Theoretical Framework:** The authors develop a well-defined theoretical model that isolates and explains the momentum persistence effect. The derivation from a simplified quadratic problem to the corrected model is logical and well-presented.
+- **Strong Empirical Validation:** The theoretical predictions are rigorously tested against empirical results on both the simplified problem and in sophisticated neural network architectures (Transformers and CNNs). The consistency across these different settings is compelling.
+- **Practical Implications:** The paper provides actionable insights and design principles for practitioners, which is highly valuable for a conference like ICLR.
+- **Excellent Writing and Organization:** The paper is very well-written, clearly structured, and easy to follow. The figures and tables effectively illustrate the key findings.
+
+Weaknesses:
+- **Approximation in Theoretical Model:** While acknowledged by the authors, the heuristic approximation used in Assumption 4 (decorrelation of momentum and position) is a limitation for a fully rigorous mathematical proof, though its empirical success is strongly demonstrated.
+- **Limited Scope of "Hard Constraint" Variants:** The paper focuses on specific types of hard constraints (SVD projection, spectral normalization). While these are common, it would be interesting to see if the phenomenon generalizes to other forms of hard constraints.
+
+Questions:
+1.  Could the authors elaborate on the potential trade-offs or scenarios where "momentum persistence" might actually be beneficial or neutral, rather than purely detrimental? Are there any constraint types or optimizer configurations where it doesn't lead to significant corruption?
+2.  The paper mentions the "chaotic, high-dimensional nature of stochastic optimization dynamics" as a motivation for the approximation. Could the authors provide more intuition or connect this to existing literature on the high-dimensional geometry of loss landscapes and optimization paths?
+3.  Regarding the practical implications, the paper suggests avoiding hard projections when possible. For situations where hard projections are necessary, are there specific "co-design" strategies for optimizer choice and projection frequency that are strongly recommended beyond just minimizing them? For example, are there specific optimizer families (beyond Adam/SGD) that are less susceptible to this effect?
+4.  The paper identifies a "blind spot" in classical optimization theory. How might this insight be extended to other areas of optimization theory where simplifying assumptions about optimizer state are made?
+
+Flag For Ethics Review: No.
+
+Rating: 10
+Confidence: 5

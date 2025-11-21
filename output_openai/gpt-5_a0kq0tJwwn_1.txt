@@ -1,0 +1,38 @@
+Summary: The paper investigates why soft, penalty-based constraints often outperform hard, projection-based constraints in deep learning. It identifies “momentum persistence” as the missing mechanism: practical optimizers (SGD with momentum, Adam) carry momentum across projection steps, while classical analyses implicitly assume a momentum reset. Through controlled quadratic-on-sphere experiments, the authors show that classical predictions fail (wrong scaling with learning rate, projection interval, and conditioning; orders-of-magnitude errors in magnitude). They propose a corrected model that accounts for momentum persistence and predicts α^2 scaling, amplified dependence on projection interval via a 1/(1−β^{2τ}) factor, and saturation to a steady state. They validate on a toy problem and two neural-network case studies (orthogonality in Transformers via OSPA; spectral constraints in CNNs), finding that soft penalties outperform hard projections, especially in noisy/low-data regimes. The paper offers design guidance: prefer soft constraints or co-design hard projections with optimizer state handling.
+
+Soundness: 3
+Presentation: 3
+Contribution: 3
+
+Strengths: 
+- Clearly articulated and empirically supported claim that carrying momentum across projections materially changes dynamics versus standard “reset” analyses.
+- Simple, tractable model that yields testable predictions (α^2 scaling, amplified τ dependence, saturation) with qualitative alignment to experiments.
+- Controlled experiments exhibit consistent discrepancies with a reset-based baseline and show saturation behavior consistent with the persistence model.
+- Case studies in Transformers and CNNs indicate practical relevance; the effect is stronger in high-noise, low-data settings, aligning with the theory’s predictions.
+- Actionable takeaways for practitioners (prefer soft constraints; if hard projections are needed, manage optimizer state and projection cadence).
+
+Weaknesses: 
+- Theoretical derivation relies on a strong heuristic (approximate decorrelation E[(m^T w)^2] ≈ (1/d)E[||m||^2]) and provides lower bounds with loose constants; the fit R² ≈ 0.54 indicates only moderate quantitative agreement. This weakens claims of precise predictive accuracy.
+- The framing that “classical theory assumes momentum reset” feels overstated. There is a body of work on projected heavy-ball, Riemannian methods, and tangent-space momentum management; these baselines are not compared, making the novelty and scope claims less crisp.
+- Ambiguity in terminology: “projection frequency τ” is used as an interval (number of steps between projections), which confuses the interpretation of scaling with τ vs 1/τ.
+- Lack of ablations isolating alternative, principled fixes used in practice: resetting momentum, projecting momentum onto the tangent space after parameter projection, or Riemannian/adaptive Riemannian methods. Without these comparisons, the design recommendations are incomplete.
+- Neural results, while suggestive, are limited: small number of seeds (3–5), missing constraint-violation metrics to ensure fair comparison (how close OSPA-Soft is to satisfying constraints), and insufficient details on compute parity and tuning budgets for soft vs hard variants.
+- Claims of orders-of-magnitude mismatch (“10,000×”) depend on a “classical” baseline whose derivation is deferred and likely not representative of best-known analyses; the paper risks a strawman.
+- Generality to Adam/AdamW is asserted but not modeled theoretically; most theory and equations are for SGD with momentum.
+
+Questions: 
+- Can you include baselines that project momentum onto the tangent space after each projection, and a momentum-reset baseline, across the neural experiments? This would directly test your proposed mitigation strategies and better ground the design recommendations.
+- How sensitive are your conclusions to the momentum parameter β and its schedule? Please add β sweeps, showing both steady-state levels and transient behavior.
+- For OSPA and spectral normalization: what are the achieved constraint-violation levels under soft penalties vs hard projections? Reporting ∥W^T W − I∥_F or spectral radii would help ensure fairness.
+- Can you compare with Riemannian SGD/Adam or recent constraint-aware optimizers on at least one case study?
+- The amplification factor f(τ) = τ/(1−β^{2τ}) uses τ as steps between projections; please clarify scaling versus true frequency (1/τ), and reconcile the “exponential amplification” language with the behavior as τ varies.
+- For Adam/AdamW, do you observe the same exponents and saturation form? Could you extend the model to include second-moment tracking and decoupled weight decay?
+- Please release code and logs so others can reproduce the fitted exponents and steady-state values.
+
+Flag For Ethics Review: No. If yes, explain why.
+
+Rating: 6
+
+Confidence: 4
+
+Code Of Conduct: Yes

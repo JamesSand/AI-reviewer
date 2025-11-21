@@ -1,0 +1,38 @@
+Summary: This paper identifies and analyzes the "momentum persistence effect" as an explanation for the common empirical observation that soft (penalty-based) constraints often outperform hard (projection-based) constraints when used with modern stateful optimizers (SGD+momentum, Adam). The authors show that classical analyses of projected optimizers implicitly assume momentum is reset at projection time; in practice momentum buffers persist and the inherited stale momentum compounds across projection cycles. They develop a corrected, tractable theoretical model for a quadratic on the unit sphere that predicts (i) super-linear scaling of corruption with learning rate and projection frequency, (ii) saturation of corruption to a steady state, and (iii) large amplification factors versus the reset model. The paper validates the model with controlled synthetic experiments and with two neural-network case studies (orthogonality in Transformers via OSPA; spectral normalization in ResNet-18/CIFAR-10). The empirical results show consistent amplification of corruption and performance gaps favoring soft constraints, especially in high-noise / low-data regimes. The paper presents actionable design principles (prefer soft penalties for momentum-based optimizers; if hard projections are required, co-design optimizer and projection frequency or explicitly reset momentum).
+
+Soundness: 3
+Presentation: 3
+Contribution: 4
+
+Strengths:
+- Identification of a clear, practically-relevant mechanism that plausibly explains a common empirical puzzle in deep learning practice. The idea that optimizer state persistence interacts nontrivially with discrete projections is conceptually simple but impactful.
+- Combined theory + controlled experiments + neural-network case studies. The paper does not rely solely on toy problems: it demonstrates effects in Transformers (OSPA) and ResNet experiments, and measures very large corruption magnitudes in realistic training.
+- The corrected recurrence model and the derived scaling laws (α^2 dependence, τ amplification, saturation) are testable and the experiments largely support them. This gives the community useful intuition and prescriptive guidance.
+- Practical guidance for practitioners (when to use soft vs hard constraints, when to reset momentum or reduce projection frequency) is actionable and likely to influence practice.
+- The paper is generally well organized; figures and appendices present derivations and experimental details.
+
+Weaknesses:
+- The theoretical analysis depends on an important heuristic (Assumption 4: approximate decorrelation between momentum direction and parameter position so that E[(m^T w)^2] ≈ (1/d) E[||m||^2]). The authors acknowledge this but the mathematical justification is limited; many of the magnitude predictions therefore remain qualitative or semi-quantitative. The reported model fit (R^2 ≈ 0.54) is moderate, indicating unexplained variance.
+- Experiments focus primarily on a few settings of optimizers (SGD w/ momentum and Adam). The role of adaptive second-moment buffers (Adam's v), weight decay, gradient clipping, learning-rate schedules, and variants like AdamW, RMSProp, or newer optimizers (e.g., SPAM referenced) is not fully explored. It is unclear whether the same amplification factors apply across those variants.
+- The "reset momentum" baseline used for comparison is an artificial experiment (explicitly zeroing momentum at projection). While this isolates the mechanism, it is not a standard practical algorithm; more discussion of practical cost/benefit of resetting (e.g., losing acceleration vs reducing corruption) is needed.
+- The neural-network experiments, while promising, could benefit from broader ablations: varying β, exploring other manifolds/projection methods (Cayley transforms, Householder reflections, Riemannian updates), and more datasets/architectures to assess generality. The ResNet spectral-norm experiment shows a much smaller accuracy gap than the Transformer experiments; more analysis to explain when gaps are large vs small would help.
+- Some reported numbers (corruption magnitudes like ~50 or ~900) are given without clear normalization / intuition; readers may find it hard to understand the practical meaning of those units across models/dimensions.
+- Reproducibility: while the appendices give many details, a public code release is not mentioned — that would be important given the dependence on implementation subtleties.
+
+Questions:
+1. Assumption 4 is central to the analytic tractability. Can the authors (a) provide empirical diagnostics showing how well E[(m^T w)^2] ≈ (1/d) E[||m||^2] holds across the synthetic and NN experiments, and (b) show sensitivity of theoretical predictions to deviations from this approximation?
+2. How do adaptive second-moment terms (Adam's v) influence the persistence effect? Does AdamW or applying weight decay / decoupled weight decay materially change amplification factors? Please report ablations with AdamW and/or RMSProp.
+3. How sensitive are the amplification and saturation phenomena to the momentum parameter β? Do small β (e.g., 0.5) practically eliminate the large amplification? Can the authors provide a contour plot (β vs τ) of steady-state corruption?
+4. The reset-baseline is informative but not used in practice. Have the authors tried practical strategies such as (a) selectively resetting only part of the momentum buffer, (b) scaling/down-weighting momentum after projection, or (c) performing projection-aware updates (e.g., projecting the momentum as well)? Empirical results on such mitigations would be valuable.
+5. Do projection methods that update parameters via orthogonal retractions (Cayley / exponential map) instead of naive SVD projections reduce this corruption because they are more "continuous"? Any experiments or discussion on projection method choice would strengthen the paper.
+6. In Transformers/OSPA experiments, how does batch size / gradient noise level quantitatively affect the size of the gap? The paper claims low-data/high-noise regimes amplify the effect — please provide more controlled ablations.
+7. How robust are the results to common training tricks (gradient clipping, warmup length, learning-rate schedules)? Do longer warmups mitigate the effect by reducing early large gradients?
+8. Will the authors release code and full hyperparameter tables required to reproduce the main NN experiments?
+
+Flag For Ethics Review: No. The paper presents theoretical and experimental analysis of optimization algorithms and neural networks. There is no apparent ethical risk, no use of sensitive personal data, no biological/medical procedures, and no dual-use concerns beyond typical ML research.
+
+Rating: 8
+
+Confidence: 4
+
+Code Of Conduct: Yes

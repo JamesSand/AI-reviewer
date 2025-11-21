@@ -1,0 +1,30 @@
+Summary: This paper identifies and rigorously analyzes the "momentum persistence effect" as the root cause for the long-standing empirical puzzle of why soft (penalty-based) constraints consistently outperform hard (projection-based) constraints in deep learning. The authors argue that classical constrained optimization theory makes a crucial, but incorrect, assumption: that optimizer momentum buffers are reset after each projection. In contrast, practical optimizers like Adam and SGD maintain momentum across projections. This inherited "stale" momentum, the paper demonstrates, compounds corruption super-linearly, leading to significantly worse performance for hard projections.
+
+The paper provides strong evidence: (1) Controlled experiments on a tractable quadratic problem show classical models fail catastrophically, mispredicting corruption magnitudes by orders of magnitude and qualitatively incorrect scaling laws for learning rate and projection frequency. (2) A new theoretical model, accounting for momentum persistence, accurately predicts these super-linear scaling laws and crucially, the saturation behavior of corruption. (3) This theory is validated on state-of-the-art Transformer and CNN models, where soft constraints consistently outperform hard projections, especially in challenging (low-data, high-noise) regimes, and direct measurements confirm the massive accumulation of momentum corruption. The paper concludes by offering concrete design principles for practitioners and highlighting implications for future optimization theory.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+1.  **Clear Problem Statement and Novel Insight:** The paper addresses a well-known and highly relevant empirical puzzle in deep learning, offering a novel and convincing explanation—the "momentum persistence effect"—that challenges a fundamental, implicit assumption in classical optimization theory.
+2.  **Rigorous Empirical Validation:** The authors employ a multi-faceted empirical strategy, starting with well-designed controlled experiments on a simplified quadratic problem to isolate the effect. These experiments provide stark, quantitative evidence of classical theory's failure (e.g., 10,000x magnitude error, qualitatively wrong scaling laws).
+3.  **Strong Theoretical Foundation:** A corrected theoretical model is developed that precisely accounts for momentum persistence and accurately predicts observed empirical phenomena, including super-linear scaling with learning rate and projection frequency, exponential amplification, and eventual saturation of corruption. The authors are transparent about the heuristic approximation used for analytical tractability.
+4.  **Real-World Generalization:** The findings are convincingly generalized to complex, state-of-the-art neural network architectures—Transformers with orthogonal constraints and CNNs with spectral normalization. The consistent performance advantage of soft constraints, especially in high-noise/low-data regimes, and direct measurement of corruption accumulation in CNNs, provide powerful evidence for the effect's practical relevance.
+5.  **Actionable Design Principles:** The paper translates its fundamental discovery into concrete, practical guidelines for practitioners on how to choose and co-design constrained optimization methods with optimizers, impacting hyperparameter selection and architectural decisions.
+6.  **Exceptional Presentation:** The paper is extremely well-written, logically structured, and easy to follow. Figures and tables are clear, informative, and effectively convey key results and comparisons.
+
+Weaknesses:
+1.  **Heuristic Approximation in Theory:** While the authors are transparent about it and provide strong empirical justification, the corrected theoretical model's reliance on Assumption 4 (approximate decorrelation) means it doesn't offer a "fully rigorous, first-principles proof" for exact magnitude predictions. This is acknowledged as a direction for future work.
+
+Questions:
+1.  The paper mentions that "explicit momentum resets after projections" could be an option when constraint satisfaction outweighs acceleration benefits. Have the authors explored empirically how such explicit resets impact training dynamics and final performance in complex neural networks? What are the practical trade-offs (e.g., convergence speed vs. constraint satisfaction)?
+2.  Regarding the heuristic approximation (Assumption 4), could the authors briefly elaborate on the specific mathematical tools or theoretical frameworks they envision could be used to develop a "fully rigorous analysis without this assumption," perhaps touching on the challenges related to path-dependent correlations on manifolds?
+
+Flag For Ethics Review: No
+
+Rating: 10
+
+Confidence: 5
+
+Code Of Conduct: Yes

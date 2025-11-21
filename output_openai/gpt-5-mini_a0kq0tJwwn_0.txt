@@ -1,0 +1,39 @@
+Summary: This paper identifies and analyzes the "momentum persistence effect" — the phenomenon that stateful optimizers (SGD with momentum, Adam) retain momentum across discrete, hard projection steps, which causes inherited stale momentum to compound and produce much larger constraint-violating radial momentum than classical projected-gradient analyses predict. The authors (1) construct a controlled quadratic-on-sphere experimental testbed, (2) show classical "momentum reset" theory fails qualitatively and quantitatively (wrong scaling laws, underestimates corruption by ≈10^4), (3) derive a corrected, tractable model that accounts for persistence and predicts α^2 scaling, super-linear τ dependence and saturation to a steady-state corruption M∞ ∝ α^2 τ/(1−β^{2τ}), (4) validate the model with extended synthetic experiments, and (5) demonstrate the phenomenon in real neural nets (OSPA in BERT, spectral norm projection in ResNet-18), showing consistent performance gaps favoring soft constraints. They conclude with actionable design principles (prefer soft constraints with stateful optimizers; if using hard projections, co-design optimizer and projection frequency / reset strategy).
+
+Soundness: 3
+Presentation: 3
+Contribution: 4
+
+Strengths: 
+- Identifies a clear, widely-relevant, and previously under-appreciated implementation-level mechanism explaining an important empirical puzzle (why penalty-based soft constraints often beat exact projections).
+- Combination of controlled synthetic experiments, an analytic (though simplified) model, and neural-network case studies is convincing: the same qualitative effects (amplified corruption, super-linear scaling, saturation) appear across domains.
+- The corrected recurrence model is simple, interpretable, and makes falsifiable predictions that largely match experimental trends (α^2 scaling, τ amplification, steady-state saturation).
+- Practical recommendations (use soft penalties; when hard projections are necessary, consider projection frequency, learning rate and explicit momentum reset) are actionable and directly useful to practitioners.
+- Empirical validation includes both NLP (BERT) and vision (ResNet) models which supports generality.
+
+Weaknesses:
+- The theoretical analysis relies on a heuristic Assumption 4 (approximate decorrelation: E[(m^T w)^2] ≈ (1/d)E[||m||^2]) and other simplifying assumptions (small step sizes, independent noise). These are plausible in high dimensions but are not rigorously justified; consequently the theoretical constants/magnitudes are approximate. The authors acknowledge this, but stronger theoretical support would be valuable.
+- Experiments, while diverse, leave some important ablations out. In particular:
+  - Limited exploration of different optimizer variants and hyperparameters (e.g., more Adam variants, RMSProp, Adafactor, different β1/β2 pairs, presence/absence of weight decay, bias correction effects). It is unclear how second-moment buffers of Adam interact with persistence (authors mention Adam but most derivations are momentum-based).
+  - Little or no comparison to constraint-aware optimizers (Riemannian SGD, Riemannian adaptive methods) or to simple mitigation strategies (explicit momentum reset after projection, projection into tangent space for momentum, projections that update optimizer state).
+  - Limited sensitivity analyses across β, dimensionality d, and different projection operators (SVD vs. QR vs. retraction). The "spectral normalization" and OSPA implementations are described, but more ablations (e.g., projection step sizes, how severe the parameter displacement per projection is) would strengthen causal claims.
+- Some reported experimental details are sparse (number of total optimizer steps in NN experiments, exact seeds, full hyperparameter grids and final chosen values are in appendix but would benefit from full reproducibility artifacts). No code link or public release is mentioned.
+- R² = 0.54 for the saturation fit is moderate; the fit is adequate for trends but not excellent. This supports the claim that the simple model captures core effects but also that there are missing factors.
+- Presentation could be tightened: a clearer, succinct summary of assumptions and precisely which optimizer variants were tested in NN experiments would improve reproducibility and reader confidence.
+
+Questions:
+1. How do Adam's second-moment estimates (v_t) interact with the persistence effect? Do adaptive scalings suppress or amplify the corruption relative to plain SGD with momentum? Can the authors report the same corruption measurements separately for SGD-momentum and Adam in the ResNet and BERT experiments?
+2. Have the authors tried the simple mitigation of explicitly zeroing/resetting the momentum buffer after a projection in NN experiments? If so, how much of the soft-vs-hard performance gap does this close (and at what cost)?
+3. How sensitive are the results to the momentum coefficient β (e.g., if β = 0.6, 0.99)? The formula predicts strong dependence via (1−β^{2τ})^{-1}; please provide an ablation over β to confirm this trend in NN settings.
+4. The theoretical derivation uses Assumption 4 (approx. decorrelation). Can the authors provide empirical diagnostics showing the degree of decorrelation (e.g., distribution of m^T w / ||m||) in both synthetic and NN runs to justify the approximation?
+5. For orthogonality projections (OSPA), different projections (e.g., retraction via Cayley transform, or orthonormalization via QR vs SVD) can modify the magnitude of parameter displacement. Do the authors observe different persistence amplification under different projection operators?
+6. Did the authors test projections that also transform the optimizer state consistently (e.g., projecting momentum into the tangent space or applying the same orthogonal transform to momentum)? This would be a natural "co-design" mitigation; empirical results would be informative.
+7. Is there a quantitative connection between the amount of per-projection parameter displacement (||w_before − w_after||) and the amount of momentum corruption? Can this be used as a proxy to predict when projections will be harmful?
+
+Flag For Ethics Review: No. There are no evident ethical concerns in the research content, which concerns optimizer dynamics and constrained learning methods. The work does not involve human subjects, privacy-sensitive data, or dual-use risks that appear problematic.
+
+Rating: 8
+
+Confidence: 4
+
+Code Of Conduct: Yes

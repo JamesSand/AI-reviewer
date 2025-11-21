@@ -1,0 +1,35 @@
+Summary: This paper studies why soft, penalty-based constraints often outperform hard projection approaches when using modern stateful optimizers. The authors identify “momentum persistence” across projection steps as the missing mechanism ignored by classical analyses that implicitly assume momentum resets at each projection. They demonstrate, in a controlled quadratic-on-sphere setting, large quantitative and qualitative mismatches between “reset” theory and practice (super-linear scaling w.r.t. learning rate and projection frequency, and much larger steady-state corruption). They propose a simple persistence-aware model leading to a recurrence that predicts saturation and amplified dependence on α, β, and τ, and validate these trends empirically. They further show consistent gaps favoring soft constraints in Transformer OSPA and CNN spectral normalization, especially in noisy/low-data regimes, and provide design recommendations.
+
+Soundness: 3
+Presentation: 3
+Contribution: 3
+
+Strengths: 
+- Clear identification and isolation of a practically important implementation detail: momentum buffers typically persist across projection steps and materially change dynamics.
+- Well-designed controlled experiments that directly compare “reset” vs “persist” variants, exposing qualitative failures of classical predictions and demonstrating saturation behavior.
+- A corrected, persistence-aware analytical model that, while approximate, explains observed super-linear scaling and steady-state behavior and matches orders of magnitude much better than classical baselines.
+- Cross-domain validation on Transformers (OSPA) and CNNs with spectral constraints, with larger gaps in high-noise regimes, yielding actionable guidance (penalties preferred unless momentum is handled).
+- The paper draws useful implications for optimizer/constraint co-design and highlights an under-explored blind spot in common practice and theory.
+
+Weaknesses: 
+- Theoretical rigor is limited: key results hinge on a strong decorrelation heuristic (Assumption 4), inequalities switch directions across steps, and constants are left loose; the final fit (R² ≈ 0.54) is only moderate. Claims like “explains super-linear scaling” are supported qualitatively but not tightly quantified.
+- The “classical theory assumes momentum reset” may be a strawman; projected methods with stateful optimizers and Riemannian approaches with vector transport exist. The paper does not evaluate practical hard-constraint baselines that mitigate persistence, e.g., (i) resetting momentum at projection, (ii) reprojecting/transporting the momentum to the tangent space, or (iii) Riemannian/constraint-aware momentum/Adam variants, on the neural network tasks.
+- Neural experiments lack some fairness and breadth: the best hyperparameters are selected per variant, potentially confounding comparisons; seeds are small (3–5), and the smallest gains (≈0.8%) may not be statistically robust given the reported std; code and exact instrumentation details for “accumulated momentum corruption” are missing, and the scale/units of that metric are not normalized across architectures or layers.
+- Limited ablations: no systematic study over β, τ, and α in the neural settings; no exploration of different optimizers (Adam, AdamW, SGD) beyond one choice per case; no sensitivity to projection operators (e.g., Cayley vs SVD) or manifold type.
+- Some overgeneralization in conclusions (“prefer soft constraints”) without establishing cases where properly managed hard constraints perform comparably; no comparison to simple remedies proposed by the paper itself (infrequent projection + momentum reset/transport).
+
+Questions: 
+- Can you report neural network results with hard constraints plus (a) momentum reset at projection and (b) momentum projection/vector transport to the tangent space? Do these baselines close the gap to soft penalties?
+- How sensitive are the neural results to β and τ? Please provide ablations matching the toy setting (scaling exponents w.r.t. α and τ).
+- For the “momentum corruption” metric in CNNs, how is it accumulated across layers and steps? Can you provide normalized, layer-wise measures and relate them to performance degradation?
+- Could you compare against Riemannian SGD/Adam or constraint-aware optimizers (e.g., transporting both parameters and state) to show the effect disappears when persistence is handled?
+- Are the results robust to different datasets and model scales (e.g., larger Transformers, ImageNet with ResNets), and do the scaling laws hold?
+- Please clarify the inequality directions and constants in Appendix A, and provide non-asymptotic bounds or empirical calibration of Cwithin and C.
+
+Flag For Ethics Review: No. If yes, explain why.
+
+Rating: 6
+
+Confidence: 3
+
+Code Of Conduct: Yes

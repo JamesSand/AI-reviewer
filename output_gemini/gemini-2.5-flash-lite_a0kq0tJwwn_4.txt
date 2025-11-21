@@ -1,0 +1,27 @@
+Summary: This paper addresses a long-standing empirical puzzle in deep learning: why soft, penalty-based constraints often outperform their mathematically exact, hard-projected counterparts. The authors identify and formalize a mechanism they call the "momentum persistence effect," which explains this phenomenon. They argue that classical optimization theory implicitly assumes that optimizer momentum resets after each projection, an assumption that contradicts practical implementations (e.g., Adam, SGD). This persistence of stale momentum leads to compounding corruption that can saturate at much higher levels than predicted by classical models. The paper provides a corrected theoretical model, validates it through experiments on a simplified quadratic problem and on large-scale Transformer and CNN models, and offers practical design principles for practitioners.
+
+Soundness: 4
+Presentation: 4
+Contribution: 4
+
+Strengths:
+1.  **Novelty and Impact:** The paper identifies a fundamentally new mechanism ("momentum persistence effect") that explains a widely observed empirical phenomenon in deep learning optimization. This is a significant contribution to the understanding of constrained optimization in deep learning.
+2.  **Rigorous Theoretical Framework:** The authors develop a clear theoretical model, starting from a simplified quadratic problem, and meticulously derive its implications for various hyperparameters and its contrast with classical theory. The formulation of the momentum recurrence relation and the derivation of scaling laws are well-executed.
+3.  **Strong Empirical Validation:** The theoretical predictions are rigorously tested against empirical results on both simplified quadratic problems and complex neural network architectures (Transformers and CNNs). The experimental results consistently support the proposed theory and highlight the dramatic failure of classical assumptions.
+4.  **Clear Explanation of the Theory-Practice Gap:** The paper clearly articulates the disconnect between theoretical assumptions and practical implementation of optimizers, providing a compelling narrative for the observed performance differences between soft and hard constraints.
+5.  **Actionable Insights:** The paper translates its findings into concrete design principles for practitioners, offering valuable guidance on when to use soft constraints, how to manage hard projections, and the importance of co-designing constraints with optimizers.
+
+Weaknesses:
+1.  **Approximation in Theoretical Model:** While the authors acknowledge that their theoretical model uses a heuristic approximation (Assumption 4) for high-dimensional decorrelation, they state that a fully rigorous analysis without it is a major theoretical challenge. While this doesn't invalidate their findings given the strong empirical support, it represents a theoretical limitation.
+2.  **Focus on Quadratic Problem:** The core theoretical derivation is based on a simplified quadratic objective. While the paper then validates the principles in neural networks, the direct theoretical connection to deep learning's highly non-convex and complex loss landscapes might benefit from further discussion, even if the problem is framed as isolating a specific mechanism.
+
+Questions:
+1.  The paper proposes that "soft constraints... preserve momentum dynamics by translating constraints into smooth penalty terms that respect the optimizer's stateful nature, thereby avoiding the accumulation of corruption entirely." Can the authors elaborate on the theoretical justification for why *all* soft constraints inherently avoid momentum persistence issues, or if there are specific properties of the soft constraints used in the experiments that guarantee this?
+2.  The paper mentions that the "momentum persistence effect emerges as the missing mechanism that bridges theory and practice. It represents a direct consequence of applying stateful Euclidean optimizers to problems with discrete, state-oblivious geometric constraints." Could the authors expand on what "state-oblivious geometric constraints" precisely means in this context and how it interacts with the stateful optimizer?
+3.  In Section A.9.1, the authors mention that the model successfully captures the phenomena and that developing a "more rigorous mathematical foundation... is a promising direction for future work." Given the conference's emphasis on theoretical rigor, could the authors provide more detail on the specific mathematical challenges and potential avenues for a fully rigorous proof of their findings, beyond the heuristic approximation?
+4.  The paper concludes with a call to "co-design constraints with optimizers." Are there specific research directions or architectural designs that emerge from this finding, beyond modifying hyperparameters or choosing soft over hard constraints, that could fundamentally change how constraints are integrated into deep learning models?
+
+Flag For Ethics Review: No.
+
+Rating: 10
+Confidence: 5

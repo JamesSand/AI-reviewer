@@ -1,0 +1,34 @@
+Summary: The paper investigates why soft, penalty-based constraints often outperform hard projection schemes in deep learning. It identifies a missing mechanism in classical analyses: momentum persistence across projection steps. The authors argue that standard implementations of SGD/Adam keep optimizer state across projections, causing “stale” momentum to re-inject off-manifold components, which compound across cycles and saturate at much higher corruption levels than predicted by models that assume post-projection momentum reset. They provide: (1) controlled quadratic-on-sphere experiments showing large quantitative and qualitative mismatches with a “classical reset” model; (2) a corrected recurrence model predicting saturation and super-linear scaling with learning rate and projection frequency; and (3) validation on Transformers with orthogonality constraints (OSPA) and CNNs with spectral constraints, where soft penalties outperform hard projections, especially in noisy/low-data regimes.
+
+Soundness: 3
+Presentation: 3
+Contribution: 3
+
+Strengths: 
+- Clear identification of a practically relevant gap between classical projected-momentum theory and real optimizer implementations.
+- Simple, testable corrected model capturing saturation and super-linear scaling (α^2, τ/(1−β^{2τ})), with supportive controlled experiments and good qualitative agreement.
+- Cross-domain evidence (Transformers with orthogonality, CNNs with spectral norm) consistent with the proposed mechanism and providing actionable guidance (prefer soft penalties; co-design projections with optimizer state).
+- Careful ablations on τ and α; long-horizon saturation studies; direct measurement of discarded momentum in CNNs.
+
+Weaknesses: 
+- Theoretical development relies on a heuristic decorrelation assumption and focuses on a sphere/quadratic setting; no rigorous bounds for general manifolds (e.g., Stiefel) or non-quadratic objectives. The κ dependence is not fully derived or reconciled with experiments.
+- Limited exploration of alternative “projection-aware” remedies: e.g., momentum reset vs. tangent-space projection/transport of momentum, Nesterov vs. heavy-ball, or explicit Adam state adjustments (first and second moments). The paper advocates resets/co-design but does not systematically test these mitigations in neural networks.
+- Claims of “orders-of-magnitude failure” of classical theory sometimes overreach; the corrected model fits trends but reported R² (~0.54) indicates only moderate quantitative accuracy.
+- Results on large models, while consistent, are modest in absolute gains (0.8–1.5% typical; larger only in low-data) and tuning parity remains a concern. Details on grid search budgets and fairness across soft vs. hard settings could be expanded.
+- Adam-specific dynamics (v-buffer, decoupled weight decay) are not analyzed theoretically; yet several results and claims generalize to Adam without thorough evidence.
+
+Questions: 
+- Can you evaluate “projection-aware state handling” baselines in networks: (a) zeroing/decaying momentum buffers after each projection; (b) projecting/transporting momentum into the tangent space; (c) adjusting Adam’s v-buffer? How do these compare to soft constraints?
+- How sensitive are results to β and β2 (for Adam)? Please provide β sweeps to validate the predicted (1−β^{2τ})^{-1} amplification.
+- Can you derive or empirically characterize κ dependence under the persistence model? Current text reports positive correlation but the model’s κ scaling is not explicit.
+- For Stiefel/orthogonality constraints, can you analyze or simulate momentum persistence with vector transport (retraction + transport) to bridge toward Riemannian methods?
+- Do the conclusions hold under mixed precision and larger batch sizes where gradient noise decreases? How does noise level σ affect the amplification and steady-state corruption in networks?
+- Please release code and seeds for the controlled experiments and OSPA/SN studies.
+
+Flag For Ethics Review: No
+
+Rating: 6
+
+Confidence: 4
+
+Code Of Conduct: Yes
