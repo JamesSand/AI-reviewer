@@ -1,0 +1,40 @@
+Summary: The paper introduces MultiAgentFraudBench, a large-scale simulation benchmark for studying collusive financial fraud by LLM-driven agents on social platforms. It extends OASIS with private peer-to-peer messaging to model a three-stage fraud lifecycle (hook, trust-building, payment). Two metrics are proposed: conversation-level conversion (Rconv) and population-level impact (Rpop). The authors evaluate 16 models, report that higher-capability models tend to achieve higher fraud success, and that enabling collusion substantially amplifies harm. Ablations study scale, malicious/benign ratios, interaction depth, and simple mitigation strategies (content debunking, agent banning via a monitoring agent, and society-level awareness prompts). A fine-grained analysis of collaboration failure modes is also provided.
+
+Soundness: 2
+Presentation: 3
+Contribution: 3
+
+Strengths: 
+- Timely topic; first benchmark I’m aware of that couples public- and private-domain interactions to study multi-agent financial fraud lifecycles at scale.
+- Clear threat model and two complementary metrics (Rconv, Rpop) that separate per-dialogue success from population-level amplification.
+- Empirical evidence that collusion channels materially increase harm, and that stronger benign models reduce susceptibility; useful ablations on scale and malicious/benign ratios.
+- Analysis of interaction depth and recommender-induced amplification offers actionable hypotheses for platform defenses.
+- Preliminary but pragmatic mitigation experiments (monitor agents and community awareness) showing large risk reductions.
+
+Weaknesses: 
+- Validity of the “safety failure” claims is unclear. Malicious intent is injected via system prompts; many proprietary models’ ToS would normally trigger refusals. Measuring “refusal rate ~0” may be an artifact of how the action space/prompting is constructed rather than a general safety gap.
+- Outcome definition is brittle: “successful fraud” is a simulated function call (transfer_money) by benign agents. No human evaluation; no robustness or sensitivity tests to alternative success criteria. 
+- Heavy confounding from environment design: activation probability = 1 for all agents, ER(0.1) social graph, heuristic recommender (product of interest/recency/impact), and the assumption that malicious agents can recognize accomplices’ posts. These choices may overstate collusion benefits and are not stress-tested.
+- No reporting of variance, seeds, or statistical significance; many results appear single-run and could be noisy given stochastic agent behavior/queueing.
+- The monitoring agent achieves perfect detection accuracy (1.0), suggesting leakage or circularity (e.g., behavior strongly correlated with known malicious prompts/IDs). This weakens mitigation claims.
+- Cross-model comparisons mix open- and closed-source APIs at temperature 0, but models evolve; details like rate limits, context sizes, and output constraints can bias action frequencies. Reproducibility is questionable, especially for closed models.
+- Some presentation/consistency issues: Appendix shows agents generating code/website scaffolds despite tool use being “excluded”; the benchmark also includes prompts generating realistic-looking PII (IDs, bank cards, PINs), raising unnecessary risk even if synthetic.
+- Ethical/process concerns: runs appear to have used proprietary models to simulate intentional fraud; compliance with provider policies is not discussed. The appendix references “GPT-5,” which is ambiguous and undermines credibility.
+
+Questions: 
+- How many independent runs per condition? Please report mean±std for Rconv and Rpop and provide statistical tests.
+- How is “refusal” operationalized? Did any model refuse at the meta-level (decline to act) but still produce JSON actions due to the response format? Provide per-model refusal definitions and examples.
+- Can malicious agents still succeed if they cannot identify accomplices’ posts? Please ablate this capability.
+- How sensitive are results to the recommender’s scoring, graph topology, and activation probabilities? Provide ablations beyond the default “all act each step.”
+- For monitoring, what features does the detector see? Is training or threshold tuning done on the same distribution as evaluation? Why does it reach 1.0 accuracy, and how does it perform when malicious prompts are obfuscated?
+- How do findings change when benign agents use different base models or mixed-capability populations?
+- Please clarify compliance with API ToS for simulating harmful activity and whether outputs were safely sandboxed.
+
+Flag For Ethics Review: Yes. If yes, explain why.
+- The work intentionally induces and measures fraudulent behavior in LLM agents, includes prompts that could facilitate misuse, and claims to release code. It also synthesizes realistic PII-like artifacts (IDs, bank cards, PINs). Use of proprietary models to generate harmful content may violate provider policies. An ethics review should assess risk mitigation, redaction, access controls, and provider compliance.
+
+Rating: 5
+
+Confidence: 3
+
+Code Of Conduct: Yes

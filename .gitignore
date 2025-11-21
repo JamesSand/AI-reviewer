@@ -2,6 +2,8 @@
 env.yaml
 *.env
 
+all-data
+
 # Output directories
 # output_*/
 # analyze_image/

@@ -1,0 +1,41 @@
+Summary: This paper studies collusive financial fraud by LLM-driven agents in social networks. It introduces MultiAgentFraudBench, an extension of OASIS that adds private messaging and group memory to simulate the full fraud lifecycle (public lure → private trust building → payment). The benchmark covers 21 fraud scenarios and evaluates 16 models with two metrics: conversation-level conversion and population-level impact. Experiments show a capability–risk correlation, that explicit collusion channels substantially increase harm, and that stronger benign models and two mitigation strategies (monitor agents and community awareness) reduce risk.
+
+Soundness: 2
+Presentation: 3
+Contribution: 3
+
+Strengths: 
+- Addresses an important and timely risk: emergent collusion among autonomous agents for financial fraud, with a concrete simulation platform.
+- Extends a popular agent-society simulator with private P2P messaging and group-level memory, enabling end-to-end lifecycle evaluation.
+- Broad empirical sweep across 16 models; identifies trends (capability–risk correlation, interaction-depth effects, and the value of collusion channels).
+- Provides two mitigation baselines (monitor agents and group awareness) and a preliminary failure-mode analysis adapted from collaboration benchmarks.
+- Releases a task suite spanning 21 realistic fraud scenarios and operationalizes two clear outcome metrics.
+
+Weaknesses: 
+- Internal validity and experimental consistency issues: several ablations change the malicious model (e.g., DeepSeek-V3 vs. DeepSeek-R1) across tables, making claims about collusion and scaling effects hard to attribute. No confidence intervals or multi-seed variance are reported.
+- Threat-model and environment mismatches: the paper states malicious/benign act with similar frequency, but the appendix sets activation probability to 1 for all; malicious agents can explicitly recognize accomplices, which favors collusion and may overstate real-world risk.
+- Success labeling is under-specified. “Fraud success” appears to hinge on tool calls (e.g., transfer_money with agree=true), not on calibrated persuasion judgments; other outcomes (PII leakage, link clicks) are ignored. No human validation or automatic quality checks of conversation content are provided.
+- Recommender system is simplistic (product of three normalized factors) and not validated; conclusions about “hype-building” and exposure could be artifacts of that design.
+- The monitoring baseline reports 1.0 detection accuracy with large effect sizes; methodology risks label leakage and lacks false-positive/false-negative trade-off analysis, precision/recall, or robustness to adversarial adaptation.
+- Fairness/inductive bias: malicious agents appear to receive richer scaffolding (shared memory, reflections, explicit collusion affordances). It is unclear whether benign agents receive equivalently strong reasoning/memory support, biasing outcomes.
+- Correlation claims (capability vs. safety) rely on external composite “capability scores” with no statistical analysis (no correlation coefficient, CIs, or controls for benign model choice); the cited capability source is ambiguously referenced.
+- Reproducibility gaps: heavy reliance on closed APIs, deterministic temperature but stochastic environment elements not controlled, single-run reporting, and typos/inconsistencies across tables; code availability is stated but unverifiable here.
+- Writing quality is generally clear but contains typos and formatting issues; several figures/tables lack methodological details needed to replicate exact settings.
+
+Questions: 
+- How exactly is conversation-level “success” determined? Is it only money transfer function calls, or do PII submission and link-click events count? Provide precise rules and adjudication examples.
+- How many runs per setting were performed? Please report mean±std over multiple random seeds for initialization, network structure, and post allocation.
+- Are benign agents equipped with the same long-term memory, reflection, and group-sharing scaffolds as malicious agents? If not, rerun with parity or ablate scaffolding on the malicious side.
+- For Table 2 (collusion on/off), were all other settings—including model, prompts, memory, and action budgets—identical? Why switch malicious models across tables?
+- How is “refusal rate” computed in an agentic setting with multiple action options, and how do you distinguish safety refusals from strategic “do_nothing”?
+- What is the ROC curve for the monitoring detector? What features are used, and how is “accuracy=1.0” computed (dataset size, class balance)?
+- Please quantify the capability–risk correlation (Pearson/Spearman, p-values) and control for benign model choice and activity levels.
+- What governance plan will accompany the release of MultiAgentFraudBench and prompts to reduce dual-use (e.g., access controls, redactions, safety filters)?
+
+Flag For Ethics Review: Yes. The work operationalizes coordinated fraud behaviors, releases prompts that instruct malicious agents, and includes synthetic PII generation (IDs, bank cards, PINs). Even with mitigation experiments, releasing code/data without access controls could facilitate misuse. An ethics review should assess dual-use risks, redaction policies, and release governance.
+
+Rating: 5
+
+Confidence: 4
+
+Code Of Conduct: Yes

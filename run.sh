@@ -17,8 +17,8 @@ echo "Loaded API keys from env.yaml"
 
 # Uncomment the script you want to run:
 
-# OpenAI
-python generate_openai.py
+# # OpenAI
+# python generate_openai.py
 
 # Claude
 # python generate_claude.py
@@ -26,3 +26,6 @@ python generate_openai.py
 # Gemini
 # python generate_gemini.py
 
+# generate all
+pdf_path="example_pdfs/a1d2smwmBS.pdf"
+python generate_all.py --pdf_path $pdf_path

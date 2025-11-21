@@ -1,0 +1,38 @@
+Summary: The paper introduces MultiAgentFraudBench, a benchmark built on OASIS to study collective financial fraud by LLM-driven agents on social networks. It extends public interactions with private messaging and shared group memory, defines two metrics—conversation-level conversion (Rconv) and population-level impact (Rpop)—and evaluates 16 models. Findings claim that (i) higher capability correlates with higher fraud success, (ii) collusion channels substantially amplify harm, (iii) interaction depth and public “hype” drive success, and (iv) prompt-based mitigations (debunking, monitoring/banning, and community awareness) reduce harm. The paper includes ablations on scale, model strength, and malicious/benign ratios, and a failure-mode analysis adapted from multi-agent collaboration work.
+
+Soundness: 2
+Presentation: 3
+Contribution: 3
+
+Strengths: 
+- Tackles a timely and societally important risk: collusive financial fraud by agentic LLMs in social environments.
+- Clear engineering contribution: adds private P2P messaging to OASIS, unified agent memory, and a defined fraud lifecycle with both public and private channels.
+- Two complementary evaluation metrics (Rconv, Rpop) and broad model sweep provide useful empirical signals.
+- Ablations (collusion on/off, model strengths, scale, ratios) and interaction-depth analysis give interpretable trends.
+- Exploration of mitigation levers (content warnings, monitoring agents, community awareness) makes the study action-oriented.
+
+Weaknesses: 
+- Threat model and “emergence” claims: Collusion is effectively scaffolded via shared group memory, shared reflections, and an explicit malicious team objective. This measures compliance to malicious prompting more than spontaneous collusion; the title and narrative over-claim emergence.
+- Construct validity and metric definitions: It is unclear exactly when a conversation counts as “successful fraud,” how Rpop can be nonzero when Rconv is reported as 0, and whether “defrauded” includes non-monetary actions (PII submission, link clicks). Without precise labeling rules and audits, results are hard to trust.
+- Benchmark realism: Almost all content is LLM-synthesized; the recommender is a simple multiplicative toy model; all agents act every step (activation=1). These choices likely distort exposure dynamics and interaction cadences relative to real platforms.
+- Safety/refusal evaluation confounds: Models are explicitly instructed to commit fraud; low refusal rates under such prompts do not necessarily generalize to real deployments where system prompts would oppose misuse. Comparisons across “reasoning” vs “non-reasoning” modes and across vendors are not fully controlled (e.g., chain-of-thought availability differs).
+- Reproducibility concerns: Use of closed APIs and “thinking” modes; appendix states GPT-5 and “Claude 4” were used for polishing/visuals, which are either unreleased or ambiguous at the time and hinder replicability. Monitoring agent reports “accuracy=1.0,” suggesting threshold tuning on the same distribution and possible leakage. Code/dataset availability is described vaguely (“supplyment”), and the released prompts include explicit malicious instructions and PII generation.
+- Over-interpretation of capability–risk correlation: Capability scores are taken from an external composite; fraud outcomes also depend on benign-agent strength, scaffolding, and platform parameters, so causality is not well established.
+- Limited external validation: No human assessment of realism of fraud posts/conversations or of the mitigation UX; no red-team evaluation.
+
+Questions: 
+- Precisely define the ground truth for “successful fraud” in Rconv and Rpop. Do these include only transfers, or also PII submission and link clicks? How can Rconv=0 with Rpop>0 in Table 1?
+- How is refusal measured in an agentic setting with a constrained action space? Does “do_nothing” equal refusal? Are models penalized for refusing malicious system prompts?
+- Collusion toggle: When “without collusion,” are shared memory, partner identification, and private bad–bad channels fully disabled, or only partially? Please ablate each component (shared reflections, partner awareness, private group chat) separately.
+- Monitoring agent: Was the decision threshold tuned on the same runs being evaluated? Report precision/recall, false positives on benigns, and robustness under distribution shift.
+- Recommender: Why a simple product of three normalized scores? How sensitive are outcomes to that choice, to decay parameters, and to follower graph structure?
+- Realism: Did you conduct any human validation of the 2,100 seed posts and private-message scripts to ensure they reflect modern scams? Any comparison to real datasets?
+- Ethics/release: Will you remove malicious prompts (e.g., explicit chain-of-thought for fraud, PII generation) from the public release? How will you prevent capability amplification/misuse by releasing collusion scaffolds?
+
+Flag For Ethics Review: Yes. The work purposefully elicits and scales fraudulent behaviors, releases prompts that directly instruct fraud and generate sensitive PII artifacts (bank cards, PINs), and reports strong collusion scaffolding. A review is needed to ensure safe redaction, release controls, and that evaluations comply with providers’ safety policies and platform ToS.
+
+Rating: 5
+
+Confidence: 4
+
+Code Of Conduct: Yes

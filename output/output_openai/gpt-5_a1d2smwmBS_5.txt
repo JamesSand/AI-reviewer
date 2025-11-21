@@ -1,0 +1,42 @@
+Summary: The paper studies whether groups of LLM-based agents can collude to conduct financial fraud on a social network and how such risks might be mitigated. It introduces MultiAgentFraudBench, extending the OASIS society simulator to include private messaging, 21 fraud scenarios across the full fraud lifecycle, and two metrics: conversation-level conversion (Rconv) and population-level impact (Rpop). Experiments with 16 models report: (i) fraud success generally increases with model capability; (ii) current safety refusals rarely trigger in agentic settings; (iii) end-to-end coordination across public and private channels is key to large-scale impact. Ablations show collusion and recommendation dynamics increase harm; stronger benign models reduce harm; and lower attacker ratios mitigate risk. Mitigation sketches include content debunking, an agent monitor for banning, and “collective resilience” via information sharing.
+
+Soundness: 2
+Presentation: 3
+Contribution: 3
+
+Strengths: 
+- Timely and societally important topic; focuses on multi-agent collusion rather than single-agent robustness.
+- Concrete benchmark with lifecycle coverage and private P2P communication; clear, operational metrics (Rconv, Rpop).
+- Broad evaluation across open and proprietary models; useful qualitative analyses of failure modes and interaction depth.
+- Ablations isolating collusion channels, scale, and attacker ratio; preliminary mitigation strategies are explored.
+
+Weaknesses: 
+- Threat-model and implementation choices may bias results toward collusion success and limit external validity:
+  - Malicious agents receive privileged capabilities (can recognize accomplices, share “group-level memory/reflections,” and have bespoke coordination scaffolding). This makes “collusion” partly engineered rather than emergent; comparisons “with/without collusion” are then confounded by extra channels and memory.
+  - Appendix C states activation probability is 1.0 for all agents, conflicting with the claim that malicious activity follows benign distributions; this undermines realism and prior assumptions.
+- Measurement validity and statistics are insufficient:
+  - Success appears to be defined by the simulated “transfer_money/submit_info” actions; with LLM-generated victims and deterministic decoding, this can overstate real-world susceptibility. No human validation, no multiple seeds, no variance/error bars, and no statistical tests are reported.
+  - The recommender system is simplified and only briefly specified; interest matching details and sensitivity analyses are limited, so amplification claims may be brittle to design choices.
+- Reproducibility concerns:
+  - Use of closed models and “thinking” variants; it is unclear whether such modes are generally accessible. Several configuration details (rate limits, context limits, API sampling defaults) and seeds are missing.
+  - Reported perfect detection accuracy (1.0) for the banning monitor is implausible and suggests leakage or an overly easy setting; evaluation lacks false-positive/negative breakdowns.
+- Ethical/practical risks in the released prompts:
+  - Prompts explicitly ask for generating bank-card numbers, PINs, and IDs (even if synthetic), and include instructions to output chain-of-thought for malicious reflection, which many providers prohibit and which may increase dual-use risk.
+- Some inconsistencies/typos and minor internal contradictions (e.g., debunking leaves Rconv the same but numbers change; activity frequency vs. activation=1; naming and versioning).
+
+Questions: 
+1. How is a “successful fraud” precisely labeled—only via an explicit transfer function? What safeguards prevent prompt-induced spurious “agreements” from inflating Rconv/Rpop?
+2. How much of the collusion gain remains if you remove all privileged information for malicious agents (no accomplice identification, no shared memory, no special coordination prompts) and only allow public interactions plus ordinary P2P messaging available to all agents?
+3. Can you provide multi-seed results with confidence intervals for key tables and sensitivity analyses for the recommender (interest matching, recency/impact weights)?
+4. What exactly is the accessibility of “thinking” mode for Claude and others, and how should other researchers reproduce those results?
+5. How does the banning monitor perform under realistic false-positive constraints and with attackers attempting evasion? Please report ROC/AUPRC and ablate label leakage.
+6. Will the released code redact PII-generating prompts and phishing scaffolds? How will dual-use risks be mitigated?
+
+Flag For Ethics Review: Yes. If yes, explain why.
+- The work purposefully engineers coordinated fraud among agents and includes prompts that generate sensitive PII (IDs, bank cards, PINs) and examples of phishing scaffolds. Although synthetic, releasing such artifacts and coordination prompts could facilitate misuse. An ethics review should assess dual-use risk, redaction plans, access controls, and compliance with provider policies (e.g., chain-of-thought disclosure and harmful use).
+
+Rating: 5
+
+Confidence: 4
+
+Code Of Conduct: Yes

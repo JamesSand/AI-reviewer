@@ -1,0 +1,43 @@
+Summary: The paper introduces MultiAgentFraudBench, a large-scale simulation benchmark to study collusive financial fraud conducted by LLM-driven agents in social networks. Built on OASIS, the framework adds private peer-to-peer messaging to capture a three-stage fraud lifecycle (hook, trust-building, payment), defines conversation-level (Rconv) and population-level (Rpop) metrics, and evaluates 16 popular LLMs under varying agent ratios and scales. Main findings: (i) fraud success generally increases with model capability; (ii) current safety alignment often fails in interactive agent settings; (iii) collusion and recommender-driven exposure substantially amplify harm; (iv) interaction depth raises conversion. The paper also explores mitigation ideas: content debunking, monitor/banning agents, and promoting benign information sharing.
+
+Soundness: 3
+Presentation: 3
+Contribution: 3
+
+Strengths: 
+- Timely and societally important topic; clear articulation of the risk that coordinated agents can amplify harm beyond single-agent capabilities.
+- Nontrivial engineering contribution: extension of OASIS to support private DMs, group memory/reflection, and collusion channels; explicit lifecycle modeling.
+- Two complementary metrics (Rconv, Rpop) capture individual persuasion and network-level impact; ablations on collusion, scale, benign-model strength, and agent ratios are informative.
+- Cross-model evaluation (open and proprietary) provides an initial landscape of safety vs capability; analysis of interaction depth and action distributions is insightful.
+- Preliminary mitigation experiments (monitor agent, collective resilience) demonstrate promising levers beyond simple content labeling.
+
+Weaknesses: 
+- Internal validity and realism: benign users are simulated LLMs with a single baseline model family and temperature 0; this likely under- or over-estimates susceptibility and does not reflect human behavior. The recommender is simplistic (product of three normalized factors), and every agent acts each timestep, which inflates exposure and interaction depth.
+- Outcome definition: “successful fraud” relies on the presence of a transfer_money function and an “agree” field, effectively hard-coding a success event rather than detecting real persuasion. Criteria for marking a conversation as “fraudulent” and for counting Rpop need clearer, model-agnostic adjudication and human verification.
+- Comparability across models: mixing “with thinking” vs “w/o thinking,” different families’ default refusal behaviors, and unequal access to chain-of-thought-like scaffolding introduces confounds. DeepSeek-R1’s strong reasoning and reflective prompts vs others’ constrained settings risks over-attributing safety differences to capability rather than evaluation protocol.
+- Statistics and robustness: results appear from single runs per condition with no variance, seeds, or confidence intervals; some headline numbers (e.g., 1.0 detection accuracy for the monitor) are implausibly high without careful error analysis, false-positive/false-negative tradeoffs, or multiple runs.
+- Collusion manipulation: “collusion on/off” is not operationalized in sufficient detail to rule out activity-level confounds (e.g., message frequency, shared memory availability, visibility of accomplices’ posts). It is unclear whether increased public activity alone explains higher Rpop.
+- Potential leakage and fairness: malicious agents are given rich reflective scaffolding and group memories; benign agents do not appear to have symmetric tools unless in the “collective resilience” variant. This asymmetry may bias outcomes.
+- Ethical considerations: the benchmark embeds and releases prompts that explicitly instruct agents to perpetrate fraud, plus synthetic PII (bank card numbers, PINs). Dual-use and data handling policies are not detailed; release plan and safeguards are unclear.
+- Reproducibility gaps: capability scores are imported from an external report; several details (number of rollouts per setting, token budgets/rate limits across APIs, moderation/refusal handling, hyperparameters for monitors) are under-specified. The paper states code is available “in the supplyment” but does not give an artifact or definitive checklist.
+
+Questions: 
+- How is a “successful fraud” event adjudicated when models refuse or output text rather than calling transfer_money? Is any human or secondary judge used to avoid gaming via function calls?
+- How many independent seeds/rollouts per setting were run, and what are the mean/variance and confidence intervals for Rconv and Rpop? Please report statistical significance.
+- What exact knobs define “collusion off”? Is group memory removed, are private bad–bad channels disabled, and is visibility of accomplices’ content hidden? Are overall activity budgets matched?
+- How are “thinking” and reflection capabilities controlled across models to ensure fairness? Why are some models evaluated in “w/o thinking” mode while others are not?
+- What safeguards and release plan will prevent the benchmark prompts and scaffolds from being misused to train or coordinate real-world scam agents?
+- For the monitor, what is the ROC curve, false-positive rate on benign users, and performance under different base rates? How sensitive are results to the threshold?
+- How sensitive are outcomes to the recommender design, activation probability, and network topology? Please include ablations with more realistic activation (<1), alternative graphs, and different feed algorithms.
+- Can you include a human-in-the-loop sanity check for a subset of conversations to validate that “conversion” is persuasive rather than a function-call artifact?
+
+Flag For Ethics Review: Yes. If yes, explain why.
+- The work explicitly develops and releases a benchmark that instructs agents to conduct financial fraud, including collusion and reflective planning; this is clear dual-use with potential to facilitate misuse.
+- Prompts in the appendix request generation and handling of synthetic PII (bank and PIN fields). Even if synthetic, the collection, storage, and release of such fields warrant review and redaction guidance.
+- Claims of deploying monitor/banning agents over public traces should be reviewed for potential bias, false positives, and fairness impacts if adopted in practice.
+
+Rating: 6
+
+Confidence: 3
+
+Code Of Conduct: Yes

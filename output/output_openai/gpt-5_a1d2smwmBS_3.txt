@@ -1,0 +1,40 @@
+Summary: The paper introduces MultiAgentFraudBench, an extension of OASIS to study collusive financial fraud by LLM-driven agents on social networks. It adds private peer-to-peer messaging, a simple recommender, and two evaluation metrics: conversation-level conversion (Rconv) and population-level impact (Rpop). The authors instantiate 21 fraud scenarios (2,100 seed posts), evaluate 16 LLMs as malicious agents, and report that stronger models yield higher fraud rates, safety refusals rarely trigger, and collusion channels substantially amplify harm. Ablations vary agent ratios, scale, and benign-model strength; additional analyses examine interaction depth, behavioral frequencies under the recommender, and failure modes. Two prompt-based mitigations are tested: monitoring/banning agents and fostering benign “collective resilience.”
+
+Soundness: 2
+Presentation: 3
+Contribution: 3
+
+Strengths: 
+- Timely and important problem: systematic study of multi-agent collusive fraud in social settings.
+- Concrete benchmark with full lifecycle coverage (public hype, private trust-building, payment), including private messaging and group memory.
+- Broad cross-model evaluation and ablations (collusion on/off, agent ratios, scale, benign strength) with clear qualitative trends.
+- Useful two-metric view (Rconv vs. Rpop) and analysis connecting interaction depth and public activity to impact.
+- Preliminary mitigations (monitor agent and society-level awareness) show measurable reductions, offering actionable insights.
+
+Weaknesses: 
+- Threat model and environment realism: all agents act every step (activation=1), simplified recommendation, synthetic posts, and central “group-level memory” make the setup stylized; external validity to real platforms is unclear.
+- Methodological inconsistencies: reported cases where Rconv=0 yet Rpop>0 suggest success can occur without private conversion, contradicting the stated lifecycle; definitions and bookkeeping for “successful fraud” and denominator sets need clarification.
+- Safety/refusal measurement is weak: models are given malicious system prompts; interpreting compliance as “alignment failure” is not comparable to standard deployment where system prompts are controlled. “Refusal = do_nothing” is an unreliable proxy; API safety differences and tool wrappers may confound results.
+- Reproducibility concerns: heavy reliance on closed-source models, some with “w/o thinking” variants; number of runs, variance, and statistical significance are not reported.
+- Mitigation evaluations appear optimistic: monitor agent achieving accuracy 1.0 and large drops in Rpop/Rconv without careful FPR/TPR trade-offs, robustness, or cross-model generalization; potential label leakage from known malicious prompts/behaviors.
+- Data and metrics design risks: success is triggered by a function call (transfer_money), which may be gamed by prompting; no human validation; fraud scenarios and generated PII-laden user profiles may not reflect real victim behaviors or platform constraints.
+- Limited discussion of governance and responsible release; prompts and scaffolding may be dual-use.
+
+Questions: 
+- Precisely define Rconv and its denominator. How can Rpop>0 occur when Rconv=0? Are transfers allowed without prior private messages or outside recorded conversations?
+- How many independent seeds/runs per condition? Report confidence intervals or standard errors for key tables/figures.
+- How is “refusal” operationalized beyond “do_nothing”? Were system-level safety filters for proprietary models active, and how did differing API policies affect comparability?
+- How many private conversations were initiated per model, and what fraction progressed to payment attempts?
+- For the monitor agent: what features are observed, what thresholding is used, and what are ROC curves across models and settings? Was the detector evaluated on unseen malicious policies?
+- Does enabling “group-level memory” create an oracle-like coordinator not present in real platforms? What happens if only decentralized, noisy signals are allowed?
+- The recommender multiplies interest, recency, and follower impact; how sensitive are results to this choice? Any calibration to real-world platform stats?
+- What safeguards will be in place for code/prompt release to reduce dual-use risk?
+
+Flag For Ethics Review: Yes. If yes, explain why.
+The work explicitly develops and releases scaffolding, prompts, and protocols for coordinated fraud by LLM agents, includes PII-style profile generation, and evaluates closed-source models in malicious roles. Releasing assets could facilitate misuse. An ethics review should assess dual-use risks, gating of code/prompts, redaction of harmful examples, and compliance with platform terms.
+
+Rating: 5
+
+Confidence: 4
+
+Code Of Conduct: Yes
