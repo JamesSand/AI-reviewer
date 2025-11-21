@@ -1,0 +1,40 @@
+Summary: The paper introduces MultiAgentFraudBench, an extension of OASIS for simulating financial-fraud collusion among LLM-driven agents on social platforms. It models a full fraud lifecycle (public lure, private trust-building, transfer), adds private P2P messaging, defines two metrics (conversation-level conversion and population-level impact), benchmarks 16 models, studies factors such as interaction depth and recommender amplification, analyzes failure modes, and explores mitigation via content debunking, monitoring/banning agents, and promoting collective resilience among benign agents. The work highlights that stronger models tend to be more effective at fraud, collusion amplifies harm, and longer conversations increase susceptibility.
+
+Soundness: 2
+Presentation: 3
+Contribution: 3
+
+Strengths: 
+- Ambitious, timely topic with clear social relevance; focuses on multi-agent collusion rather than single-agent susceptibility.
+- Concrete benchmark with 21 scenario types covering multiple fraud categories; explicit modeling of public and private channels.
+- Two interpretable evaluation metrics linking micro (conversion) and macro (population) effects; broad comparison across 16 LLMs.
+- Empirical observations about interaction depth and activity patterns in recommender-driven exposure are insightful.
+- Initial mitigation studies (monitor agents and community awareness) provide actionable directions beyond pure measurement.
+
+Weaknesses:
+- Collusion is largely scripted, not emergent: malicious agents are explicitly told they are a coordinated fraud team, share group-level memory/reflections, and are given a unified objective. Claims about “spontaneous collaboration” are overstated given this strong prior.
+- Environment assumptions reduce external validity: activation probability set to 1 for all agents, simplistic Erdős–Rényi network, and a very simple recommender scoring function. No calibration to real platform distributions.
+- Success metrics depend heavily on the design and prompts of the benign agents. The benign side lacks strong default safety guardrails, and the results vary drastically with the chosen benign model; limited statistical analysis, no variance across multiple runs or seeds.
+- Mixing model settings across ablations (e.g., DeepSeek-V3 vs R1) complicates interpretation; some tables use different “fixed” malicious models, which risks selection bias.
+- Detection/monitoring results report perfect or near-perfect accuracy without rigorous validation methodology, dataset construction details, or false positive analysis.
+- Limited methodological clarity: precise definition of “fraud success” beyond transfer_money and whether submitting PII/clicking links counts; how conversations are segmented; how many trials per configuration; confidence intervals are missing.
+- Safety/ethics concerns: the paper and appendix contain detailed malicious prompts, scaffolding for phishing sites, and instructions to generate bank-card numbers and PINs (even if synthetic), with an intent to release code. Mitigations for responsible release are under-specified.
+
+Questions:
+- What constitutes a “successful” fraud conversation exactly? Is it only transfer_money, or do submit_info and click_link also count? How are partial successes treated?
+- How many random seeds per configuration? Please report mean ± std and perform significance testing.
+- How are private conversations initiated and terminated, and how is “interaction depth” counted (turns per dyad, total messages, or steps)?
+- Can you reproduce the main findings if the malicious agents are not told they are a team and do not receive shared memory, i.e., remove explicit collusion scaffolding and only allow public signals?
+- How sensitive are Rpop and Rconv to the recommender design and to more realistic activity rates (activation p < 1) and network topologies?
+- For the monitor agent, what are false positives/false negatives across time? What labeled data or rules determine ground truth? Why is detection accuracy 1.0?
+- What safeguards and access controls will be placed on releasing prompts, datasets, and code to avoid dual-use?
+- The appendix references GPT-5 and several unreleased resources. Are these placeholders? Please clarify reproducibility given proprietary APIs and model updates.
+
+Flag For Ethics Review: Yes. If yes, explain why.
+The work contains and proposes to release detailed malicious prompts and procedures for conducting coordinated financial fraud, including scaffolding for phishing content and generation of synthetic bank-card and PIN data. While synthetic, this is dual-use with clear misuse potential. The paper lacks a concrete plan for redaction, access control, and mitigation against replication by bad actors.
+
+Rating: 5
+
+Confidence: 3
+
+Code Of Conduct: Yes
